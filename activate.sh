@@ -36,10 +36,10 @@ if [[ ! -d ${VENV_FOLDER} ]] ; then
         echo -e $YELLOW"You can download it from https://www.python.org/downloads/"$NC
         return 1
     fi
-    
+
     if command -v uv &> /dev/null; then
         if uv venv ${VENV_FOLDER} --python=python${PRIMARY_PYTHON_VERSION}; then
-    
+
             . ${VENV_FOLDER}/bin/activate
             uv sync --frozen
             END_TIME=$(date +%s)
@@ -49,10 +49,10 @@ if [[ ! -d ${VENV_FOLDER} ]] ; then
             return 1
         fi
     else
-        
+
         echo -e $RED"Error: Astral's UV is not installed."$NC
         echo -e $YELLOW"Please install UV from https://github.com/astral-sh/uv before proceeding."$NC
-        
+
         return 1
     fi
 else

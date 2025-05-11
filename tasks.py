@@ -1,15 +1,13 @@
-import os
 import shutil
 import sys
 
-from invoke import task, Context, Collection
-import time
+from invoke import Collection, Context, task
 
 
 def get_allowed_doc_languages():
     build_docs_file_name = "scripts/build-docs.sh"
     try:
-        with open(build_docs_file_name, "r") as f:
+        with open(build_docs_file_name) as f:
             for line in f:
                 if "for lang in" in line:
                     langs = line.split("in")[1].strip().split(";")[0].split()
@@ -23,11 +21,10 @@ ALLOWED_DOC_LANGUAGES = get_allowed_doc_languages()
 ALLOWED_VERSION_TYPES = ["release", "bug", "feature"]
 
 
-
 @task
 def version(_c: Context):
     """Show the current version."""
-    with open("src/pagesmith/__about__.py", "r") as f:
+    with open("src/pagesmith/__about__.py") as f:
         version_line = f.readline()
         version_num = version_line.split('"')[1]
         print(version_num)
@@ -43,12 +40,11 @@ def ver_task_factory(version_type: str):
     return ver
 
 
-
 def reqs(c: Context):
     """Upgrade requirements including pre-commit."""
     c.run("pre-commit autoupdate")
     c.run("uv lock --upgrade")
-    
+
 
 def docs_task_factory(language: str):
     @task
@@ -75,7 +71,6 @@ def uv(c: Context):
 def pre(c):
     """Run pre-commit checks"""
     c.run("pre-commit run --verbose --all-files")
-
 
 
 namespace = Collection.from_module(sys.modules[__name__])

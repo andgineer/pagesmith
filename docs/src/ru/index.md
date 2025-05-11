@@ -5,7 +5,7 @@ Splitting HTML into pages, preserving HTML tags while respecting the original do
 
 ### Дополнительно
 
-Чтобы увидеть все параметры, используйте: 
+Чтобы увидеть все параметры, используйте:
 ```bash
 pagesmith --help
 ```

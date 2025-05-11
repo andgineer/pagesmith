@@ -1,4 +1,5 @@
-"""Splitting HTML into pages, preserving HTML tags while respecting the original document structure and text integrity.
+"""Splitting HTML into pages, preserving HTML tags
+while respecting the original document structure and text integrity.
 
 The file is mandatory for build system to find the package.
 """

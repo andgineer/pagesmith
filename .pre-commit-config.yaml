@@ -1,6 +1,7 @@
 exclude: |
     (?x)(
       .venv/|
+      tasks.py|
       resources/
     )
 repos:
@@ -78,5 +79,3 @@ repos:
         files: \.py$
         exclude: ^tests/
         language: python
-  
-
