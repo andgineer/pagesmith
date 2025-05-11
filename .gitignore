@@ -16,3 +16,4 @@ pytest-coverage.txt
 **/ru/reference.md
 **/.setup-scripts/
 allure-results/
+dist/
