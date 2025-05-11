@@ -51,6 +51,7 @@ path = "src/pagesmith/__about__.py"
 
 [tool.uv]
 dev-dependencies = [
+    "allure-pytest>=2.14.2",
     "invoke>=2.2.0",
     "mkdocs-awesome-pages-plugin>=2.10.1",
     "mkdocs-material>=9.6.13",

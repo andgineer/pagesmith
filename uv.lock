@@ -2,6 +2,41 @@ version = 1
 requires-python = ">=3.10"
 
 [[package]]
+name = "allure-pytest"
+version = "2.14.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "allure-python-commons" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d6/f4/59d3d3ca7cbcdb5efae990072f6b4aafebff524237fa277c14daac8b84f8/allure_pytest-2.14.2.tar.gz", hash = "sha256:d387492178d27805863d95350bdc38b7feca3ed7165841997630fd4073cc9101", size = 17153 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f3/bb/d6b28ee5cced087a171715945e578bd6f2c0a32e6bbbd3578fe701f7ae4c/allure_pytest-2.14.2-py3-none-any.whl", hash = "sha256:18f3baa9ebd1b6148223cfa898bacfc2794bb9446221adac1be71deeb26ed79a", size = 11673 },
+]
+
+[[package]]
+name = "allure-python-commons"
+version = "2.14.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "pluggy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d0/79/53fe62ff56fa1f972b9fcbc46d04687786907cecc40b412421c4554d3734/allure_python_commons-2.14.2.tar.gz", hash = "sha256:7acdc4fe3efbe709604895e2393f082b2659d8e5653e77ff6367682e6e4a41bc", size = 15186 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/b7/41b4323f65911b216a616087c37a8fd337d2cd92f7b8fa89bc35cb91cd1d/allure_python_commons-2.14.2-py3-none-any.whl", hash = "sha256:ad50385a4c601ec31c86eed773d8ccfdcc687fecbb6535c9768af3bf03b50a19", size = 16191 },
+]
+
+[[package]]
+name = "attrs"
+version = "25.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/b0/1367933a8532ee6ff8d63537de4f1177af4bff9f3e829baf7331f595bb24/attrs-25.3.0.tar.gz", hash = "sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b", size = 812032 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/06/bb80f5f86020c4551da315d78b3ab75e8228f89f0162f2c3a819e407941a/attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3", size = 63815 },
+]
+
+[[package]]
 name = "babel"
 version = "2.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -674,6 +709,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "allure-pytest" },
     { name = "invoke" },
     { name = "mkdocs-awesome-pages-plugin" },
     { name = "mkdocs-material" },
@@ -690,6 +726,7 @@ requires-dist = [{ name = "lxml" }]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "allure-pytest", specifier = ">=2.14.2" },
     { name = "invoke", specifier = ">=2.2.0" },
     { name = "mkdocs-awesome-pages-plugin", specifier = ">=2.10.1" },
     { name = "mkdocs-material", specifier = ">=9.6.13" },
