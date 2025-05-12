@@ -9,9 +9,9 @@
 | src/pagesmith/html\_page\_splitter.py          |      153 |      148 |     3% |     9-279 |
 | src/pagesmith/page\_splitter.py                |       54 |       54 |     0% |     3-129 |
 | src/pagesmith/parser.py                        |       21 |       16 |    24% |     15-40 |
-| src/pagesmith/refine\_html.py                  |      187 |      187 |     0% |     1-393 |
+| src/pagesmith/refine\_html.py                  |      186 |      186 |     0% |     1-408 |
 | src/pagesmith/refine\_html\_beautiful\_soup.py |      107 |      107 |     0% |     4-317 |
-|                                      **TOTAL** |  **561** |  **540** | **4%** |           |
+|                                      **TOTAL** |  **560** |  **539** | **4%** |           |
 
 
 ## Setup coverage badge
