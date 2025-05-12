@@ -2,10 +2,16 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/andgineer/pagesmith/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                           |    Stmts |     Miss |  Cover |   Missing |
-|------------------------------- | -------: | -------: | -----: | --------: |
-| src/pagesmith/\_\_about\_\_.py |        1 |        1 |     0% |         1 |
-|                      **TOTAL** |    **1** |    **1** | **0%** |           |
+| Name                                           |    Stmts |     Miss |  Cover |   Missing |
+|----------------------------------------------- | -------: | -------: | -----: | --------: |
+| src/pagesmith/\_\_about\_\_.py                 |        1 |        0 |   100% |           |
+| src/pagesmith/chapter\_detector.py             |       38 |       28 |    26% |18-30, 36-115, 132-135 |
+| src/pagesmith/html\_page\_splitter.py          |      153 |      148 |     3% |     9-279 |
+| src/pagesmith/page\_splitter.py                |       54 |       54 |     0% |     3-129 |
+| src/pagesmith/parser.py                        |       21 |       16 |    24% |     15-40 |
+| src/pagesmith/refine\_html.py                  |      187 |      187 |     0% |     1-393 |
+| src/pagesmith/refine\_html\_beautiful\_soup.py |      107 |      107 |     0% |     4-317 |
+|                                      **TOTAL** |  **561** |  **540** | **4%** |           |
 
 
 ## Setup coverage badge
