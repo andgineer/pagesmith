@@ -137,7 +137,7 @@ def collapse_consecutive_br(  # noqa: C901,PLR0912,PLR0915
 
         # We'll track if we've seen a <br> and which one it was
         last_br = None
-        br_tags_to_remove = []
+        br_tags_to_remove: list[etree.Element] = []
 
         # Check each child
         for child in children:

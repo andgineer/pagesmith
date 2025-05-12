@@ -47,7 +47,7 @@ class HtmlPageSplitter:
         """Split content into pages."""
         if self.root is None:
             return
-        current_page: list = []
+        current_page: list[etree.Element] = []
         current_size = 0
 
         for element in self._split_element(self.root):
