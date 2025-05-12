@@ -83,7 +83,7 @@ def refine_html(  # noqa: PLR0915,PLR0912,PLR0913,C901
     Returns:
         Cleaned HTML string
     """
-    if input_html is None and root is None:
+    if not input_html and root is None:
         return ""
 
     if root is None:
