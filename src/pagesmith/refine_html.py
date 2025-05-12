@@ -83,12 +83,12 @@ def refine_html(  # noqa: PLR0915,PLR0912,PLR0913,C901
     Returns:
         Cleaned HTML string
     """
-    if not input_html and root is None:
+    if input_html is None and root is None:
         return ""
 
     if root is None:
         try:
-            root = parse_partial_html(input_html)
+            root = parse_partial_html(input_html)  # type: ignore[arg-type]  # we already check for None
         except Exception:
             logger.exception("Failed to parse HTML, returning original")
             return input_html or ""
@@ -110,7 +110,11 @@ def refine_html(  # noqa: PLR0915,PLR0912,PLR0913,C901
     return re.sub(r"\s+", " ", etree_to_str(root)).strip()
 
 
-def collapse_consecutive_br(root, keep_empty_tags_set, ids_to_keep_set):  # noqa: C901,PLR0912,PLR0915
+def collapse_consecutive_br(  # noqa: C901,PLR0912,PLR0915
+    root: etree.Element,
+    keep_empty_tags_set: set[str],
+    ids_to_keep_set: set[str],
+) -> None:
     """From <br> tags sequence, keep only the first one.
 
     This function searches for consecutive <br> tags and removes all but the first one
@@ -174,7 +178,11 @@ def collapse_consecutive_br(root, keep_empty_tags_set, ids_to_keep_set):  # noqa
                 parent.remove(br_tag)
 
 
-def remove_empty_elements(ids_to_keep_set, keep_empty_tags_set, root):  # noqa: PLR0912,C901,PLR0915
+def remove_empty_elements(  # noqa: PLR0912,C901,PLR0915
+    ids_to_keep_set: set[str],
+    keep_empty_tags_set: set[str],
+    root: etree.Element,
+) -> None:
     """Remove empty elements and divs that contain only <br> tags and whitespace.
 
     Args:
@@ -187,7 +195,7 @@ def remove_empty_elements(ids_to_keep_set, keep_empty_tags_set, root):  # noqa: 
     """
     # We'll iterate until no more elements are removed
     elements_removed = True
-    elements_to_remove = []
+    elements_to_remove: list[etree.Element] = []
 
     while elements_removed:
         elements_removed = False
@@ -269,10 +277,13 @@ def remove_empty_elements(ids_to_keep_set, keep_empty_tags_set, root):  # noqa: 
         if elements_removed:
             continue
 
-    return elements_to_remove
 
-
-def has_meaningful_content(element, keep_empty_tags_set, ids_to_keep_set, check_tail=True):
+def has_meaningful_content(
+    element: etree.Element,
+    keep_empty_tags_set: set[str],
+    ids_to_keep_set: set[str],
+    check_tail: bool = True,
+) -> bool:
     """Check if element/children has non-whitespace content or in the `keep_empty_tags_set`."""
     if element.tag in keep_empty_tags_set:
         return True
@@ -292,7 +303,7 @@ def has_meaningful_content(element, keep_empty_tags_set, ids_to_keep_set, check_
     )
 
 
-def process_class_and_style(root, tags_with_classes):
+def process_class_and_style(root: etree.Element, tags_with_classes: dict[str, str]) -> None:
     """Remove class and style attributes from elements not in tags_with_classes."""
     for element in root.iter():
         if "class" in element.attrib and element.tag not in tags_with_classes:
@@ -304,7 +315,11 @@ def process_class_and_style(root, tags_with_classes):
             element.set("class", tags_with_classes[element.tag])
 
 
-def unwrap_unknow_tags(allowed_tags_set, ids_to_keep_set, root):  # noqa: C901,PLR0912
+def unwrap_unknow_tags(  # noqa: C901,PLR0912
+    allowed_tags_set: set[str],
+    ids_to_keep_set: set[str],
+    root: etree.Element,
+) -> None:
     elements_to_unwrap = []
     for element in root.iter():
         if element is root:
@@ -369,7 +384,7 @@ def unwrap_unknow_tags(allowed_tags_set, ids_to_keep_set, root):  # noqa: C901,P
         parent.remove(element)
 
 
-def remove_tags_with_content(root, tags_to_remove_set):
+def remove_tags_with_content(root: etree.Element, tags_to_remove_set: set[str]) -> None:
     """Remove specified tags along with their content."""
     for tag in tags_to_remove_set:
         for element in root.xpath(f"//{tag}"):

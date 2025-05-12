@@ -2,7 +2,8 @@ exclude: |
     (?x)(
       .venv/|
       tasks.py|
-      resources/
+      resources/|
+      refine_html_beautiful_soup.py
     )
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

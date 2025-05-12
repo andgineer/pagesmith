@@ -37,4 +37,4 @@ def etree_to_str(root: etree.Element) -> str:
         for child in root:
             result += tostring(child, encoding="unicode", method="html")
         return result
-    return tostring(root, encoding="unicode", method="html")
+    return tostring(root, encoding="unicode", method="html")  # type: ignore[no-any-return]
