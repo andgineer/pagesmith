@@ -1,11 +1,63 @@
 # pagesmith
 
-Splitting HTML into pages, preserving HTML tags while respecting the original document structure and text integrity.
+Разбиение HTML на страницы с сохранением HTML-тегов и соблюдением исходной структуры документа и целостности текста.
+
+Также предоставляет утилиты для работы со страницами, такие как улучшение HTML, разделение на страницы и извлечение оглавления из чистого текста.
 
 
-### Дополнительно
+!!! note "Как это работает"
+    Класс `HtmlPageSplitter` интеллектуально разбивает HTML-содержимое на страницы соответствующего размера, обеспечивая при этом правильное закрытие и валидность всех HTML-тегов. Это сохраняет как структуру документа, так и его стиль.
 
-Чтобы увидеть все параметры, используйте:
-```bash
-pagesmith --help
+### HTML в страницы
+
+Использование класса [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
+
+```python
+from pagesmith import HtmlPageSplitter
+
+html = """
+<p>Начало текста
+<a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">
+Это ссылка с очень длинным текстом, который должен быть разделен на страницы, но сам тег должен оставаться целым
+</a>
+<span class="another-long-class-that-should-not-be-split">
+Дополнительный текст, который продолжается дальше и должен также быть разделен на несколько страниц при сохранении структуры HTML
+</span>
+</p>
+"""
+
+for page in HtmlPageSplitter(html, target_page_size=50).pages():
+    print(page)
 ```
+
+!!! example "Результирующие страницы"
+
+    === "Страница 1"
+        ```html
+        <p>Начало текста
+        </p><p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">
+        Это ссылка с очень длинным текстом, который </a></p>
+        ```
+
+    === "Страница 2"
+        ```html
+        <p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">должен быть разделен на страницы, но сам тег </a></p>
+        ```
+
+    === "Страница 3"
+        ```html
+        <p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">должен оставаться целым
+        </a></p><p><span class="another-long-class-that-should-not-be-split">
+        Дополнительный текст, который продолжается </span></p>
+        ```
+
+    === "Страница 4"
+        ```html
+        <p><span class="another-long-class-that-should-not-be-split">дальше и должен также быть разделен на несколько </span></p>
+        ```
+
+    === "Страница 5"
+        ```html
+        <p><span class="another-long-class-that-should-not-be-split">страниц при сохранении структуры HTML
+        </span></p>
+        ```

@@ -1,6 +1,4 @@
-## Установка
-
-## Установка `pagesmith`:
+# Установка
 
 ```bash
 pip install pagesmith
