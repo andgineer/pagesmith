@@ -1,6 +1,7 @@
 import logging
 import re
 from collections.abc import Iterable
+from typing import Optional
 
 from lxml import etree
 
@@ -61,7 +62,7 @@ logger = logging.getLogger(__name__)
 def refine_html(  # noqa: PLR0915,PLR0912,PLR0913,C901
     input_html: str | None = None,
     *,
-    root: etree.Element | None = None,
+    root: Optional[etree.Element] = None,  # noqa
     allowed_tags: Iterable[str] = ALLOWED_TAGS,
     tags_to_remove_with_content: Iterable[str] = REMOVE_WITH_CONTENT,
     keep_empty_tags: Iterable[str] = KEEP_EMPTY_TAGS,

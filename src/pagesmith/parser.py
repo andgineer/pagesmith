@@ -1,11 +1,12 @@
 import io
 import re
+from typing import Optional
 
 from lxml import etree, html
 from lxml.html import tostring
 
 
-def parse_partial_html(input_html: str) -> etree.Element | None:
+def parse_partial_html(input_html: str) -> Optional[etree.Element]:  # noqa
     """Parse string with HTML fragment into an lxml tree.
 
     Supports partial HTML content.
