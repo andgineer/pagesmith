@@ -5,7 +5,7 @@
 | Name                                           |    Stmts |     Miss |   Cover |   Missing |
 |----------------------------------------------- | -------: | -------: | ------: | --------: |
 | src/pagesmith/\_\_about\_\_.py                 |        1 |        0 |    100% |           |
-| src/pagesmith/chapter\_detector.py             |       38 |        1 |     97% |       133 |
+| src/pagesmith/chapter\_detector.py             |       38 |        1 |     97% |       137 |
 | src/pagesmith/html\_page\_splitter.py          |      153 |       17 |     89% |35, 107-108, 125, 130, 139, 151, 164, 169-173, 176, 190-191, 227, 268 |
 | src/pagesmith/page\_splitter.py                |       54 |        8 |     85% |43, 55-61, 126-127 |
 | src/pagesmith/parser.py                        |       22 |        0 |    100% |           |

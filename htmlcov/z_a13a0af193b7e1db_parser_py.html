@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_a13a0af193b7e1db_refine_html_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.8.0">coverage.py v7.8.0</a>,
-            created at 2025-05-12 07:47 +0000
+            created at 2025-05-13 04:01 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -92,7 +92,7 @@
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">    <span class="str">"""Parse string with HTML fragment into an lxml tree.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t"><span class="str">    Supports partial HTML content.</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="str">    Removes comments.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="str">    Removes comments and CDATA.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t">    <span class="com"># Simple heuristic to detect unclosed comments</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t">    <span class="nam">open_count</span> <span class="op">=</span> <span class="nam">input_html</span><span class="op">.</span><span class="nam">count</span><span class="op">(</span><span class="str">"&lt;!--"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -115,12 +115,13 @@
     <p class="pln"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t34" href="#t34">34</a></span><span class="t"><span class="key">def</span> <span class="nam">etree_to_str</span><span class="op">(</span><span class="nam">root</span><span class="op">:</span> <span class="nam">etree</span><span class="op">.</span><span class="nam">Element</span><span class="op">)</span> <span class="op">-></span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t35" href="#t35">35</a></span><span class="t">    <span class="key">if</span> <span class="nam">root</span><span class="op">.</span><span class="nam">tag</span> <span class="key">in</span> <span class="op">[</span><span class="str">"root"</span><span class="op">,</span> <span class="str">"html"</span><span class="op">,</span> <span class="str">"body"</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t36" href="#t36">36</a></span><span class="t">        <span class="com"># If it's our artificial root, only return its contents</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t37" href="#t37">37</a></span><span class="t">        <span class="nam">result</span> <span class="op">=</span> <span class="nam">root</span><span class="op">.</span><span class="nam">text</span> <span class="key">if</span> <span class="nam">root</span><span class="op">.</span><span class="nam">text</span> <span class="key">else</span> <span class="str">""</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t38" href="#t38">38</a></span><span class="t">        <span class="key">for</span> <span class="nam">child</span> <span class="key">in</span> <span class="nam">root</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">            <span class="nam">result</span> <span class="op">+=</span> <span class="nam">tostring</span><span class="op">(</span><span class="nam">child</span><span class="op">,</span> <span class="nam">encoding</span><span class="op">=</span><span class="str">"unicode"</span><span class="op">,</span> <span class="nam">method</span><span class="op">=</span><span class="str">"html"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t">        <span class="key">return</span> <span class="nam">result</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t">    <span class="key">return</span> <span class="nam">tostring</span><span class="op">(</span><span class="nam">root</span><span class="op">,</span> <span class="nam">encoding</span><span class="op">=</span><span class="str">"unicode"</span><span class="op">,</span> <span class="nam">method</span><span class="op">=</span><span class="str">"html"</span><span class="op">)</span>  <span class="com"># type: ignore[no-any-return]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t36" href="#t36">36</a></span><span class="t">        <span class="com"># For artificial root, return only content without the root tag</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t37" href="#t37">37</a></span><span class="t">        <span class="com"># todo: check if this is really artificial root and not from input</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t38" href="#t38">38</a></span><span class="t">        <span class="nam">result</span> <span class="op">=</span> <span class="nam">root</span><span class="op">.</span><span class="nam">text</span> <span class="key">or</span> <span class="str">""</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">        <span class="key">for</span> <span class="nam">child</span> <span class="key">in</span> <span class="nam">root</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t">            <span class="nam">result</span> <span class="op">+=</span> <span class="nam">tostring</span><span class="op">(</span><span class="nam">child</span><span class="op">,</span> <span class="nam">encoding</span><span class="op">=</span><span class="str">"unicode"</span><span class="op">,</span> <span class="nam">method</span><span class="op">=</span><span class="str">"html"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t">        <span class="key">return</span> <span class="nam">result</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t42" href="#t42">42</a></span><span class="t">    <span class="key">return</span> <span class="nam">tostring</span><span class="op">(</span><span class="nam">root</span><span class="op">,</span> <span class="nam">encoding</span><span class="op">=</span><span class="str">"unicode"</span><span class="op">,</span> <span class="nam">method</span><span class="op">=</span><span class="str">"html"</span><span class="op">)</span>  <span class="com"># type: ignore[no-any-return]</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -130,7 +131,7 @@
             <a class="nav" href="z_a13a0af193b7e1db_refine_html_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.8.0">coverage.py v7.8.0</a>,
-            created at 2025-05-12 07:47 +0000
+            created at 2025-05-13 04:01 +0000
         </p>
     </div>
 </footer>
