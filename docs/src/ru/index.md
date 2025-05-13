@@ -2,62 +2,23 @@
 
 Разбиение HTML на страницы с сохранением HTML-тегов и соблюдением исходной структуры документа и целостности текста.
 
-Также предоставляет утилиты для работы со страницами, такие как улучшение HTML, разделение на страницы и извлечение оглавления из чистого текста.
+Используется чрезвычайно быстрый парсер lxml.
+
+Предоставляет утилиты для работы со страницами, такие как улучшение HTML.
+
+Также содержит класс для разделение на страницы и извлечение оглавления из чистого текста.
 
 
 !!! note "Как это работает"
     Класс `HtmlPageSplitter` интеллектуально разбивает HTML-содержимое на страницы соответствующего размера, обеспечивая при этом правильное закрытие и валидность всех HTML-тегов. Это сохраняет как структуру документа, так и его стиль.
 
-### HTML в страницы
+## Установка
 
-Использование класса [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
-
-```python
-from pagesmith import HtmlPageSplitter
-
-html = """
-<p>Начало текста
-<a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">
-Это ссылка с очень длинным текстом, который должен быть разделен на страницы, но сам тег должен оставаться целым
-</a>
-<span class="another-long-class-that-should-not-be-split">
-Дополнительный текст, который продолжается дальше и должен также быть разделен на несколько страниц при сохранении структуры HTML
-</span>
-</p>
-"""
-
-for page in HtmlPageSplitter(html, target_page_size=50).pages():
-    print(page)
+```bash
+pip install pagesmith
 ```
 
-!!! example "Результирующие страницы"
-
-    === "Страница 1"
-        ```html
-        <p>Начало текста
-        </p><p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">
-        Это ссылка с очень длинным текстом, который </a></p>
-        ```
-
-    === "Страница 2"
-        ```html
-        <p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">должен быть разделен на страницы, но сам тег </a></p>
-        ```
-
-    === "Страница 3"
-        ```html
-        <p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">должен оставаться целым
-        </a></p><p><span class="another-long-class-that-should-not-be-split">
-        Дополнительный текст, который продолжается </span></p>
-        ```
-
-    === "Страница 4"
-        ```html
-        <p><span class="another-long-class-that-should-not-be-split">дальше и должен также быть разделен на несколько </span></p>
-        ```
-
-    === "Страница 5"
-        ```html
-        <p><span class="another-long-class-that-should-not-be-split">страниц при сохранении структуры HTML
-        </span></p>
-        ```
+## Использование
+- [Разбиение HTML на страницы](html_splitter.md)
+- [Разбиение текста на страницы](text_splitter.md)
+- [Очистка HTML](refine.md)

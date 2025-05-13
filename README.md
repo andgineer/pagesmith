@@ -40,7 +40,6 @@ For more information about a script run:
 
 
 ## Coverage report
-* [Codecov](https://app.codecov.io/gh/andgineer/pagesmith/tree/main/src%2Fpagesmith)
 * [Coveralls](https://coveralls.io/github/andgineer/pagesmith)
 
 > Created with cookiecutter using [template](https://github.com/andgineer/cookiecutter-python-package)

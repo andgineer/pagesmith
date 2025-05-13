@@ -2,62 +2,22 @@
 
 Splitting HTML into pages, preserving HTML tags while respecting the original document structure and text integrity.
 
-Also provides utilities for working with pages such as refining HTML, splitting to pages and extracting Table of Content from pure text.
+Utilize blazing fast lxml parser.
 
+Provides utilities for working with pages such as refining HTML.
+
+Also contains class for splitting to pages and extracting Table of Content from pure text
 
 !!! note "How It Works"
     The `HtmlPageSplitter` class intelligently splits HTML content into appropriately sized pages while ensuring all HTML tags remain properly closed and valid. This preserves both the document structure and styling.
 
-### HTML to Pages
+## Installation
 
-Using class [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
-
-```python
-from pagesmith import HtmlPageSplitter
-
-html = """
-<p>Start of text
-<a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">
-This is a link with a very long text that should be split across pages but the tag itself should stay intact
-</a>
-<span class="another-long-class-that-should-not-be-split">
-More text that goes on and on and should also be split into multiple pages while preserving the HTML structure
-</span>
-</p>
-"""
-
-for page in HtmlPageSplitter(html, target_page_size=50).pages():
-    print(page)
+```bash
+pip install pagesmith
 ```
 
-!!! example "Resulting pages"
-
-    === "Page 1"
-        ```html
-        <p>Start of text
-        </p><p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">
-        This is a link with a very long text that </a></p>
-        ```
-
-    === "Page 2"
-        ```html
-        <p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">should be split across pages but the tag itself </a></p>
-        ```
-
-    === "Page 3"
-        ```html
-        <p><a href="../Text/chapter1.xhtml" class="very-long-class-name-to-force-splitting">should stay intact
-        </a></p><p><span class="another-long-class-that-should-not-be-split">
-        More text that goes on and on and should </span></p>
-        ```
-
-    === "Page 4"
-        ```html
-        <p><span class="another-long-class-that-should-not-be-split">also be split into multiple pages while preserving </span></p>
-        ```
-
-    === "Page 5"
-        ```html
-        <p><span class="another-long-class-that-should-not-be-split">the HTML structure
-        </span></p>
-        ```
+## Usage
+- [HTML to Pages](html_splitter.md)
+- [Text to Pages](text_splitter.md)
+- [Refine HTML](refine.md)

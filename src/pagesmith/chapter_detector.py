@@ -7,10 +7,14 @@ from typing import TypeAlias
 log = logging.getLogger()
 
 
-class ChapterDetector:
-    """Detect headings."""
+TocEntry: TypeAlias = tuple[str, int, int]  # <title>, <page num>, <word on the page num>
+Toc: TypeAlias = list[TocEntry]
 
-    def get_chapters(self, page_text: str, page_num: int) -> list[tuple[str, int, int]]:
+
+class ChapterDetector:
+    """Detect chapters."""
+
+    def get_chapters(self, page_text: str, page_num: int) -> Toc:
         """Detect chapter headings in the text.
 
         Return Table of Content as a list of tuples (chapter, page, word).
@@ -133,7 +137,3 @@ class ChapterDetector:
             end = len(text)
         ignore_words = ["<br/>"]
         return sum(1 for word in re.split(r"\s", text[:end]) if word not in ignore_words)
-
-
-TocEntry: TypeAlias = tuple[str, int, int]  # <title>, <page num>, <word on the page num>
-Toc: TypeAlias = list[TocEntry]

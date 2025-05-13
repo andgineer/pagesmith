@@ -71,5 +71,7 @@ extra:
 
 nav:
   - index.md
-  - installation.md
+  - html_splitter.md
+  - text_splitter.md
+  - refine.md
   - reference.md

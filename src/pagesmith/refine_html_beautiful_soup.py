@@ -1,6 +1,6 @@
+# pragma: no cover
 """Obsolete module to clean HTML using BeautifulSoup."""
 
-# pragma: no cover
 import logging
 from collections.abc import Iterable
 

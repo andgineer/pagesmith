@@ -10,7 +10,7 @@ def parse_partial_html(input_html: str) -> Optional[etree.Element]:  # noqa
     """Parse string with HTML fragment into an lxml tree.
 
     Supports partial HTML content.
-    Removes comments.
+    Removes comments and CDATA.
     """
     # Simple heuristic to detect unclosed comments
     open_count = input_html.count("<!--")
@@ -33,8 +33,9 @@ def parse_partial_html(input_html: str) -> Optional[etree.Element]:  # noqa
 
 def etree_to_str(root: etree.Element) -> str:
     if root.tag in ["root", "html", "body"]:
-        # If it's our artificial root, only return its contents
-        result = root.text if root.text else ""
+        # For artificial root, return only content without the root tag
+        # todo: check if this is really artificial root and not from input
+        result = root.text or ""
         for child in root:
             result += tostring(child, encoding="unicode", method="html")
         return result
