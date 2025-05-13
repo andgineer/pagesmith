@@ -24,13 +24,13 @@ plugins:
             heading_level: 2
             show_root_heading: true
             show_source: false
-            show_csource_code: true
+            show_source_code: true
             show_root_members_full_path: false
             show_object_full_path: true
             show_category_heading: true
             show_symbol_type_heading: true
             show_symbol_type_toc: true
-            docstring_style: numpy
+            docstring_style: google
             filters:
               - "!^_"
             show_signature: true
