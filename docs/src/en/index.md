@@ -18,6 +18,6 @@ pip install pagesmith
 ```
 
 ## Usage
-- [HTML to Pages](html_splitter.md)
-- [Text to Pages](text_splitter.md)
+- [Split HTML to Pages](html_splitter.md)
+- [Split Text to Pages](text_splitter.md)
 - [Refine HTML](refine.md)

@@ -1,4 +1,4 @@
-# Text to Pages
+# Split Text to Pages
 
 Use class [PageSplitter][pagesmith.PageSplitter]
 
