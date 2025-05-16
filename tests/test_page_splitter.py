@@ -79,9 +79,9 @@ def test_paragraph_end_priority(mock_page_splitter):
     splitter = PageSplitter(text)
     pages = list(splitter.pages())
     assert len(pages) == 3
-    assert "a" * 25 + ".  " + "b" * 5 == pages[0]
+    assert "a" * 25 + ". " + "b" * 5 == pages[0]
     assert "\n\n" + "a" * 22 == pages[1]
-    assert "\r\n\t\r\n" + "b" * 3 + ". \r" + "a" * 10 == pages[2]
+    assert "\n \n" + "b" * 3 + ". " + "a" * 10 == pages[2]
 
 
 @allure.epic("Page splitter")
@@ -153,17 +153,3 @@ def test_pages_shift_if_heading(mock_page_splitter):
     pages = list(splitter.pages())
     assert len(pages) == 3
     assert pages[0] == "a" * 20 + "aa"
-
-
-# @allure.epic("Page splitter")
-# def test_split_inside_p_tag(mock_page_splitter):
-#     # Text contains a long paragraph that should be split inside the <p> tag
-#     text = "<p>" + "a" * 60 + "</p>" + "b" * 30
-#     splitter = PageSplitter(text)
-#     pages = list(splitter.pages())
-#
-#     # Assert that the split is inside the <p> tag
-#     print(pages)
-#     assert len(pages) == 3
-#     assert pages[0].endswith("&lt;/p&gt;")  # we escape tags when import plain text
-#     assert pages[1].startswith("&lt;p&gt;")

@@ -27,7 +27,7 @@ class PageSplitter:
 
         Also clear headings and recollect them during pages generation.
         """
-        heading_detector = ChapterDetector()
+        chapter_detector = ChapterDetector()
         start = self.start
         self.toc = []
         page_num = 0
@@ -36,19 +36,22 @@ class PageSplitter:
             end = self.find_nearest_page_end(start)
 
             # shift end if found chapter near the end
-            if headings := heading_detector.get_chapters(
+            if chapters := chapter_detector.get_chapters(
                 self.text[start + self.PAGE_MIN_LENGTH : end] + "\n\n",
                 page_num,
             ):
-                end = start + self.PAGE_MIN_LENGTH + headings[0][1] - 1  # pos from first chapter
+                end = start + self.PAGE_MIN_LENGTH + chapters[0][1] - 1  # pos from first chapter
 
-            page_text = self.text[start:end]
-            if headings := heading_detector.get_chapters(page_text, page_num):
-                self.toc.extend(headings)
-            # todo: remove <br/> from the start of the page
+            page_text = self.normalize(self.text[start:end])
+            if chapters := chapter_detector.get_chapters(page_text, page_num):
+                self.toc.extend(chapters)
             yield page_text
             assert end > start
             start = end
+
+    def normalize(self, text: str) -> str:
+        text = re.sub(r"\r", "", text)
+        return re.sub(r"[ \t]+", " ", text)
 
     def set_page_target(self, target_length: int, error_tolerance: int) -> None:
         """Set book page target length and error tolerance."""
