@@ -35,16 +35,31 @@ class PageSplitter:
             page_num += 1
             end = self.find_nearest_page_end(start)
 
-            # shift end if found chapter near the end
-            if chapters := chapter_detector.get_chapters(
-                self.text[start + self.PAGE_MIN_LENGTH : end] + "\n\n",
-                page_num,
-            ):
-                end = start + self.PAGE_MIN_LENGTH + chapters[0][1] - 1  # pos from first chapter
+            # Check for chapters near the end of the current page segment
+            chapter_search_text = self.text[
+                start + self.PAGE_MIN_LENGTH : start + self.PAGE_MAX_LENGTH
+            ]
+            if chapters := chapter_detector.get_chapters(chapter_search_text, page_num):
+                # Find the chapter position that is nearest to the target page size
+                target_position = start + self.PAGE_LENGTH_TARGET
+                # Use the character position (chapters[i][1]) to find the nearest chapter
+                nearest_chapter_idx = min(
+                    range(len(chapters)),
+                    key=lambda i: abs(
+                        (start + self.PAGE_MIN_LENGTH + chapters[i][1]) - target_position,
+                    ),
+                )
+                # Set end to the start of the nearest chapter
+                end = start + self.PAGE_MIN_LENGTH + chapters[nearest_chapter_idx][1]
 
             page_text = self.normalize(self.text[start:end])
-            if chapters := chapter_detector.get_chapters(page_text, page_num):
-                self.toc.extend(chapters)
+
+            # Collect TOC entries for the current page
+            if chapters := chapter_detector.get_chapters("\n\n" + page_text, page_num):
+                # Convert chapter matches to TOC entries (title, page, word)
+                toc_entries = [(title, page_num, word_num) for title, _, _, word_num in chapters]
+                self.toc.extend(toc_entries)
+
             yield page_text
             assert end > start
             start = end
@@ -69,7 +84,6 @@ class PageSplitter:
         self,
         page_start_index: int,
         pattern: re.Pattern[str],
-        return_start: bool = False,
     ) -> int | None:
         """Find the nearest regex match around expected end of page.
 
@@ -85,12 +99,9 @@ class PageSplitter:
             page_start_index + int(self.PAGE_MIN_LENGTH),
             self.start,
         )
-        ends = [
-            match.start() if return_start else match.end()
-            for match in pattern.finditer(self.text, start_pos, end_pos)
-        ]
+        ends = [match.end() for match in pattern.finditer(self.text, start_pos, end_pos)]
         return (
-            min(ends, key=lambda x: abs(x - page_start_index + self.PAGE_LENGTH_TARGET))
+            min(ends, key=lambda x: abs(x - (page_start_index + self.PAGE_LENGTH_TARGET)))
             if ends
             else None
         )
@@ -99,17 +110,15 @@ class PageSplitter:
         """Find the nearest page end."""
         patterns = [  # sorted by priority
             re.compile(r"(\r?\n|\u2028|\u2029)(\s*(\r?\n|\u2028|\u2029))+"),  # Paragraph end
-            re.compile(r"<\/?p>"),  # HTML paragraph end
             re.compile(r"(\r?\n|\u2028|\u2029)"),  # Line end
             re.compile(r"[^\s.!?]*\w[^\s.!?]*[.!?]\s"),  # Sentence end
             re.compile(r"\w+\b"),  # Word end
         ]
 
-        for pattern_idx, pattern in enumerate(patterns):
+        for pattern in patterns:
             if nearest_page_end := self.find_nearest_page_end_match(
                 page_start_index,
                 pattern,
-                return_start=pattern_idx < 2,  # noqa: PLR2004
             ):
                 return self.handle_p_tag_split(page_start_index, nearest_page_end)
 

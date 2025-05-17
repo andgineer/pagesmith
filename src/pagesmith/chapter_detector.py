@@ -9,28 +9,26 @@ log = logging.getLogger()
 
 TocEntry: TypeAlias = tuple[str, int, int]  # <title>, <page num>, <word on the page num>
 Toc: TypeAlias = list[TocEntry]
+ChapterMatch: TypeAlias = tuple[str, int, int, int]  # <title>, <position>, <page_num>, <word_num>
 
 
 class ChapterDetector:
     """Detect chapters."""
 
-    def get_chapters(self, page_text: str, page_num: int) -> Toc:
+    def get_chapters(self, page_text: str, page_num: int) -> list[ChapterMatch]:
         """Detect chapter headings in the text.
 
-        Return Table of Content as a list of tuples (chapter, page, word).
+        Return a list of tuples (chapter, position, page, word).
+        Position is the character position in the text where the chapter starts.
         """
         patterns = self.prepare_chapter_patterns()
-        headings: list[tuple[str, int, int]] = []
+        headings: list[ChapterMatch] = []
         for pattern in patterns:
-            if match := pattern.search(page_text):
-                headings.append(
-                    (
-                        match.group().replace("<br/>", " ").strip(),
-                        page_num,
-                        self.get_word_num(page_text, match.start() + 1),
-                    ),
-                )
-                break
+            for match in pattern.finditer(page_text):
+                title = match.group().replace("<br/>", " ").strip()
+                position = match.start()
+                word_num = self.get_word_num(page_text, position)
+                headings.append((title, position, page_num, word_num))
         return headings
 
     def prepare_chapter_patterns(self) -> list[re.Pattern[str]]:  # pylint: disable=too-many-locals
@@ -132,8 +130,11 @@ class ChapterDetector:
         ]
 
     def get_word_num(self, text: str, end: int | None = None) -> int:
-        """Get word number up to the given position."""
+        """Get word number up to the given position.
+
+        Count words from 0.
+        """
         if end is None:
             end = len(text)
         ignore_words = ["<br/>"]
-        return sum(1 for word in re.split(r"\s", text[:end]) if word not in ignore_words)
+        return sum(1 for word in re.split(r"\s+", text[:end]) if word and word not in ignore_words)

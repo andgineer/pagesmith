@@ -1,46 +1,7 @@
 import re
 
 import allure
-import pytest
 from pagesmith.page_splitter import PageSplitter
-
-
-@pytest.fixture
-def mock_page_splitter():
-    yield from mock_book_plain_text(30)
-
-
-@pytest.fixture
-def mock_page100_splitter():
-    yield from mock_book_plain_text(100)
-
-
-@pytest.fixture(
-    scope="function",
-    params=[
-        "\n\nCHAPTER VII.\nA Mad Tea-Party\n\n",
-        "\n\nCHAPTER I\n\n",
-        "\n\nCHAPTER Two\n\n",
-        "\n\nCHAPTER Third\n\n",
-        "\n\nCHAPTER four. FALL\n\n",
-        "\n\nCHAPTER twenty two. WINTER\n\n",
-        "\n\nCHAPTER last inline\nunderline\n\n",
-        "\n\nI. A SCANDAL IN BOHEMIA\n \n",
-        "\n\nV.\nПет наранчиних сjеменки\n\n",
-    ],
-)
-def chapter_pattern(request):
-    return request.param
-
-
-@pytest.fixture(
-    scope="function",
-    params=[
-        "\ncorrespondent could be.\n\n",
-    ],
-)
-def wrong_chapter_pattern(request):
-    return request.param
 
 
 def normalize(text: str) -> str:
@@ -52,24 +13,6 @@ def normalize(text: str) -> str:
     return re.sub(r"[ \t]+", " ", text)
 
 
-def mock_book_plain_text(page_length: int):
-    original_target = PageSplitter.PAGE_LENGTH_TARGET
-    set_book_page_length(page_length)
-    yield
-    set_book_page_length(original_target)
-
-
-def set_book_page_length(page_length):
-    PageSplitter.PAGE_LENGTH_TARGET = page_length  # Mocked target length for testing
-    PageSplitter.PAGE_LENGTH_ERROR_TOLERANCE = 0.5
-    PageSplitter.PAGE_MIN_LENGTH = int(
-        PageSplitter.PAGE_LENGTH_TARGET * (1 - PageSplitter.PAGE_LENGTH_ERROR_TOLERANCE)
-    )
-    PageSplitter.PAGE_MAX_LENGTH = int(
-        PageSplitter.PAGE_LENGTH_TARGET * (1 + PageSplitter.PAGE_LENGTH_ERROR_TOLERANCE)
-    )
-
-
 @allure.epic("Page splitter")
 def test_paragraph_end_priority(mock_page_splitter):
     # Paragraph end is within 25% error margin but farther than sentence end
@@ -79,9 +22,9 @@ def test_paragraph_end_priority(mock_page_splitter):
     splitter = PageSplitter(text)
     pages = list(splitter.pages())
     assert len(pages) == 3
-    assert "a" * 25 + ". " + "b" * 5 == pages[0]
-    assert "\n\n" + "a" * 22 == pages[1]
-    assert "\n \n" + "b" * 3 + ". " + "a" * 10 == pages[2]
+    assert "a" * 25 + ". " + "b" * 5 + "\n\n" == pages[0]
+    assert "a" * 22 + "\n \n" == pages[1]
+    assert "b" * 3 + ". " + "a" * 10 == pages[2]
 
 
 @allure.epic("Page splitter")
@@ -120,12 +63,12 @@ def test_no_special_end(mock_page_splitter):
     len(pages[0]) == 30
 
 
-# @allure.epic("Page splitter")
-# def test_chapter_pattern(mock_page100_splitter, chapter_pattern):
-#     splitter = PageSplitter(f"aa{chapter_pattern}34")
-#     pages = list(splitter.pages())
-#     assert len(splitter.toc) == 1, f"chapter_pattern: {chapter_pattern}"
-#     assert splitter.toc[0] == (chapter_pattern.replace("\n", "   ").strip(), 1, 2)
+@allure.epic("Page splitter")
+def test_chapter_pattern(mock_page100_splitter, chapter_pattern):
+    splitter = PageSplitter(f"aa{chapter_pattern}34")
+    pages = list(splitter.pages())
+    assert len(splitter.toc) == 1, f"chapter_pattern: {chapter_pattern}"
+    assert splitter.toc[0] == (chapter_pattern.strip(), 1, 1)  # first word with index 0 is "aa"
 
 
 @allure.epic("Page splitter")
@@ -142,14 +85,17 @@ def test_pages_shift_if_heading(mock_page_splitter):
     pages = list(splitter.pages())
     assert len(pages) == 3
     assert pages[0] == "a" * 16
+    assert pages[1] == chapter_pattern
 
     splitter = PageSplitter("a" * 16 + "\n123 aaaaaaaa\n" + "aaa")
     pages = list(splitter.pages())
     assert len(pages) == 2
-    assert pages[0] == "a" * 16 + "\n"
-    assert pages[1] == "123 aaaaaaaa\naaa"
+    assert pages[0] == "a" * 16 + "\n123 aaaaaaaa\n"
+    assert pages[1] == "aaa"
 
-    splitter = PageSplitter("a" * 20 + "aa\n\n" + "d" * 21 + "\n\n34")
+    splitter = PageSplitter("a" * 20 + " aa\n\n" + "d" * 21 + "\n\n34")
     pages = list(splitter.pages())
+    print(pages)
+    print([len(page) / splitter.PAGE_LENGTH_TARGET for page in pages])
     assert len(pages) == 3
-    assert pages[0] == "a" * 20 + "aa"
+    assert pages[0] == "a" * 20 + " aa\n\n"
