@@ -1,0 +1,2 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"This is a dummy test to ensure that the test suite runs without errors.","0","test_dummy","tests","Sun May 11 09:18:04 GMT 2025","passed","Sun May 11 09:18:04 GMT 2025","","test_dummy","",""
