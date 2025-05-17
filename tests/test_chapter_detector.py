@@ -1,6 +1,7 @@
 import allure
 
 from pagesmith import ChapterDetector, PageSplitter
+from pagesmith.page_splitter import PAGE_LENGTH_TARGET
 
 
 @allure.epic("Book import")
@@ -98,7 +99,7 @@ def test_toc_word_counts_across_pages():
     """Test that TOC entries have correct word numbers when chapters span multiple pages."""
     # Create a long text that will span multiple pages
     word_len = len("x ")
-    first_page_filler_words_count = int(PageSplitter.PAGE_LENGTH_TARGET * 0.9) // word_len
+    first_page_filler_words_count = int(PAGE_LENGTH_TARGET * 0.9) // word_len
 
     # Create first page with a chapter at the end closer than target size possible tolerance
     first_page = "x " * first_page_filler_words_count + "\n\nChapter 1\n\n" + "Some text. " * 5
@@ -113,8 +114,8 @@ def test_toc_word_counts_across_pages():
     pages = list(splitter.pages())
     print(pages)
     print(first_page_filler_words_count)
-    print(first_page_filler_words_count * word_len / PageSplitter.PAGE_LENGTH_TARGET)
-    print([(len(page), len(page) / PageSplitter.PAGE_LENGTH_TARGET) for page in pages])
+    print(first_page_filler_words_count * word_len / PAGE_LENGTH_TARGET)
+    print([(len(page), len(page) / PAGE_LENGTH_TARGET) for page in pages])
 
     # The TOC should have two entries
     assert len(splitter.toc) == 2

@@ -17,7 +17,7 @@ html = """
 </p>
 """
 
-for page in HtmlPageSplitter(html, target_page_size=50).pages():
+for page in HtmlPageSplitter(html, target_length=50).pages():
     print(page)
 ```
 

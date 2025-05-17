@@ -4,7 +4,7 @@ import allure
 import pytest
 from lxml import etree
 
-from pagesmith.html_page_splitter import HtmlPageSplitter, TARGET_PAGE_SIZE
+from pagesmith.html_page_splitter import HtmlPageSplitter, PAGE_LENGTH_TARGET
 
 
 def html_to_normalized_text(html: str):
@@ -58,7 +58,7 @@ def test_multiple_paragraphs_near_limit():
     """
     target_size = 165
 
-    medium_splitter = HtmlPageSplitter(content, target_page_size=target_size)
+    medium_splitter = HtmlPageSplitter(content, target_length=target_size)
     pages = list(medium_splitter.pages())
 
     print(f"\nTotal content size: {len(content)} chars")
@@ -96,22 +96,22 @@ class TestEpubContentSplitting:
         large_html = (
             "<div><p>" + "HTML content " * 500 + "</p><p>" + "More HTML " * 500 + "</p></div>"
         )
-        splitter = HtmlPageSplitter(large_html, target_page_size=TARGET_PAGE_SIZE)
+        splitter = HtmlPageSplitter(large_html, target_length=PAGE_LENGTH_TARGET)
         html_pages = list(splitter.pages())
 
         assert len(html_pages) > 1, "Large HTML element should be split into multiple pages"
-        assert all(len(page) <= TARGET_PAGE_SIZE * 2 for page in html_pages), (
+        assert all(len(page) <= PAGE_LENGTH_TARGET * 2 for page in html_pages), (
             "No HTML page should be more than twice the TARGET_PAGE_SIZE"
         )
 
         assert_text(large_html, html_pages)
 
         large_p_element = "<p>" + "Large content " * 1000 + "</p>"
-        splitter = HtmlPageSplitter(large_p_element, target_page_size=TARGET_PAGE_SIZE)
+        splitter = HtmlPageSplitter(large_p_element, target_length=PAGE_LENGTH_TARGET)
         p_pages = list(splitter.pages())
 
         assert len(p_pages) > 1, "Large paragraph should be split into multiple pages"
-        assert all(len(page) <= TARGET_PAGE_SIZE * 2 for page in p_pages), (
+        assert all(len(page) <= PAGE_LENGTH_TARGET * 2 for page in p_pages), (
             "No paragraph page should be more than twice the TARGET_PAGE_SIZE"
         )
 
@@ -129,7 +129,7 @@ class TestEpubContentSplitting:
         <p class="p1">Моя мать не боялась загробной жизни. Как и большинство евреев, она имела очень смутное представление о том, что ждет человека, попавшего в могилу, и она старалась не думать об этом. Ее страшили само умирание, безвозвратность ухода из жизни. Я до сих пор не могу забыть, с какой одержимостью она говорила о неизбежности конца, особенно в моменты расставаний. Все мое существование было наполнено экзальтированными и драматическими сценами прощаний. И когда они с отцом уезжали из Бостона в Нью-Йорк на уик-энд, и когда мать провожала меня в летний лагерь, и даже когда я уходил в школу, она прижималась ко мне и со слезами говорила о том, как она ослабла, предупреждая, что мы можем больше не увидеться. Если мы шли вместе куда-нибудь, она вдруг останавливалась, словно теряя сознание. Иногда она показывала мне вену на шее, брала меня за руку и просила пощупать пульс, чтобы удостовериться в том, как неровно бьется ее сердце.</p>
         """
         splitter = HtmlPageSplitter(
-            russian_text, target_page_size=target_size, page_size_tolerance=tolerance
+            russian_text, target_length=target_size, error_tolerance=tolerance
         )
 
         pages = list(splitter.pages())
@@ -162,7 +162,7 @@ class TestEpubContentSplitting:
         target_size = 50
 
         long_sentence = "<p>This is a very long sentence that significantly exceeds our tiny page size limit and will need to be split into multiple pages somehow.</p>"
-        splitter = HtmlPageSplitter(long_sentence, target_page_size=target_size)
+        splitter = HtmlPageSplitter(long_sentence, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nLong sentence size: {len(long_sentence)} chars")
@@ -191,7 +191,7 @@ class TestEpubContentSplitting:
         </span>
         </p>
         """
-        splitter = HtmlPageSplitter(complex_html, target_page_size=target_size)
+        splitter = HtmlPageSplitter(complex_html, target_length=target_size)
         pages = list(splitter.pages())
 
         print("\nSplit pages content:")
@@ -248,7 +248,7 @@ class TestEpubContentSplitting:
         nested_html += "Deeply nested content " * 30
         nested_html += "</p></div></article></section></div>"
 
-        splitter = HtmlPageSplitter(nested_html, target_page_size=target_size)
+        splitter = HtmlPageSplitter(nested_html, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nNested HTML size: {len(nested_html)} chars")
@@ -272,18 +272,18 @@ class TestEpubContentSplitting:
     def test_empty_and_whitespace_content(self):
         """Test handling of empty or whitespace-only content."""
         # Empty content
-        empty_splitter = HtmlPageSplitter("", target_page_size=100)
+        empty_splitter = HtmlPageSplitter("", target_length=100)
         empty_pages = list(empty_splitter.pages())
         assert len(empty_pages) == 0, "Empty content should produce no pages"
 
         # Whitespace only content
-        whitespace_splitter = HtmlPageSplitter("  \n  \t  ", target_page_size=100)
+        whitespace_splitter = HtmlPageSplitter("  \n  \t  ", target_length=100)
         whitespace_pages = list(whitespace_splitter.pages())
         assert len(whitespace_pages) <= 1, "Whitespace-only content should produce at most one page"
 
         # Content with only HTML tags but no text
         empty_tags_html = "<div><p></p><span></span></div>"
-        empty_tags_splitter = HtmlPageSplitter(empty_tags_html, target_page_size=100)
+        empty_tags_splitter = HtmlPageSplitter(empty_tags_html, target_length=100)
         empty_tags_pages = list(empty_tags_splitter.pages())
         assert len(empty_tags_pages) <= 1, "Empty tags should produce at most one page"
 
@@ -298,7 +298,7 @@ class TestEpubContentSplitting:
         must be kept intact when splitting content into multiple pages.</p>
         """
 
-        splitter = HtmlPageSplitter(html_with_entities, target_page_size=target_size)
+        splitter = HtmlPageSplitter(html_with_entities, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nHTML with entities size: {len(html_with_entities)} chars")
@@ -344,7 +344,7 @@ class TestEpubContentSplitting:
         </div>
         """
 
-        splitter = HtmlPageSplitter(mixed_html, target_page_size=target_size)
+        splitter = HtmlPageSplitter(mixed_html, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nMixed HTML size: {len(mixed_html)} chars")
@@ -390,7 +390,7 @@ class TestEpubContentSplitting:
         </div>
         """
 
-        splitter = HtmlPageSplitter(html_with_images, target_page_size=target_size)
+        splitter = HtmlPageSplitter(html_with_images, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nHTML with images size: {len(html_with_images)} chars")
@@ -458,7 +458,7 @@ class TestEpubContentSplitting:
             )
         large_content += "</div>"
 
-        splitter = HtmlPageSplitter(large_content, target_page_size=target_size)
+        splitter = HtmlPageSplitter(large_content, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nLarge content size: {len(large_content)} chars")
@@ -492,7 +492,7 @@ class TestEpubContentSplitting:
         </div>
         """
 
-        splitter = HtmlPageSplitter(unicode_html, target_page_size=target_size)
+        splitter = HtmlPageSplitter(unicode_html, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nUnicode HTML size: {len(unicode_html)} chars")
@@ -527,7 +527,7 @@ class TestEpubContentSplitting:
         """
 
         # Should not raise exceptions with malformed HTML
-        splitter = HtmlPageSplitter(malformed_html, target_page_size=target_size)
+        splitter = HtmlPageSplitter(malformed_html, target_length=target_size)
         pages = list(splitter.pages())
 
         print(f"\nMalformed HTML size: {len(malformed_html)} chars")
@@ -567,7 +567,7 @@ def test_split_text_long_sentence_simplified():
     original_tree = etree.fromstring(content.encode("utf-8"), parser)
 
     # Split the content
-    splitter = HtmlPageSplitter(content, target_page_size=target_size)
+    splitter = HtmlPageSplitter(content, target_length=target_size)
     pages = list(splitter.pages())
 
     # Print the pages for visual inspection
@@ -594,7 +594,7 @@ def test_direct_split_text_method():
     html_content = "<div>test</div>"
 
     # Very small target size with tolerance enough to find word boundaries
-    splitter = HtmlPageSplitter(html_content, target_page_size=10, page_size_tolerance=1.5)
+    splitter = HtmlPageSplitter(html_content, target_length=10, error_tolerance=1.5)
 
     # Create very long text with individual words that exceed target page size
     long_text = "ThisIsAVeryLongWord ThatExceedsTargetSize AnotherLongWord AndSomeMoreText"
@@ -653,7 +653,7 @@ def test_preserve_empty_tags():
     print(f"\nOriginal tag counts: {original_counts}")
 
     # Split the content
-    splitter = HtmlPageSplitter(html_with_empty_tags, target_page_size=target_size)
+    splitter = HtmlPageSplitter(html_with_empty_tags, target_length=target_size)
     pages = list(splitter.pages())
 
     print(f"Target page size: {target_size} chars")
@@ -723,7 +723,7 @@ def test_empty_tags_edge_cases():
     </div>
     """
 
-    splitter = HtmlPageSplitter(edge_case_html, target_page_size=target_size)
+    splitter = HtmlPageSplitter(edge_case_html, target_length=target_size)
     pages = list(splitter.pages())
 
     # Count br and hr tags in original and split content
@@ -759,7 +759,7 @@ def test_empty_tags_edge_cases():
     </div>
     """
 
-    splitter2 = HtmlPageSplitter(multiple_empty_html, target_page_size=target_size)
+    splitter2 = HtmlPageSplitter(multiple_empty_html, target_length=target_size)
     pages2 = list(splitter2.pages())
 
     # Verify the sequence of empty tags is maintained

@@ -6,7 +6,8 @@ from lxml import etree
 
 from pagesmith.parser import etree_to_str
 
-TARGET_PAGE_SIZE = 3000
+PAGE_LENGTH_TARGET = 3000  # Target page length in characters
+PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
 
 
 class HtmlPageSplitter:
@@ -15,21 +16,22 @@ class HtmlPageSplitter:
     def __init__(
         self,
         content: str = "",
+        *,
         root: etree._Element | None = None,
-        target_page_size: int = TARGET_PAGE_SIZE,
-        page_size_tolerance: float = 0.25,
+        target_length: int = PAGE_LENGTH_TARGET,
+        error_tolerance: float = PAGE_LENGTH_ERROR_TOLERANCE,
     ) -> None:
         """Initialize the HTML page splitter.
 
         Args:
             content: HTML content string to split (optional if root is provided)
             root: Parsed lxml element tree root (optional if content is provided)
-            target_page_size: Target size for each page in characters
-            page_size_tolerance: Tolerance for page size variation (default 0.25)
+            target_length: Target size for each page in characters
+            error_tolerance: Tolerance for page size variation (default 0.25)
         """
-        self.target_page_size = target_page_size
-        self.max_size = int(target_page_size * (1 + page_size_tolerance))
-        self.max_error = self.max_size - target_page_size
+        self.target_page_size = target_length
+        self.max_size = int(target_length * (1 + error_tolerance))
+        self.max_error = self.max_size - target_length
 
         if root is not None:
             self.root = root

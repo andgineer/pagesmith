@@ -3,24 +3,38 @@
 import re
 from collections.abc import Iterator
 
-from pagesmith.chapter_detector import ChapterDetector, Toc
+from pagesmith.chapter_detector import ChapterDetector, TocEntry
+
+PAGE_LENGTH_TARGET = 3000  # Target page length in characters
+PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
 
 
 class PageSplitter:
     """Split text into pages"""
 
-    PAGE_LENGTH_TARGET = 3000  # Target page length in characters
-    PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
-    assert 0 < PAGE_LENGTH_ERROR_TOLERANCE < 1
-    PAGE_MIN_LENGTH = int(PAGE_LENGTH_TARGET * (1 - PAGE_LENGTH_ERROR_TOLERANCE))
-    PAGE_MAX_LENGTH = int(PAGE_LENGTH_TARGET * (1 + PAGE_LENGTH_ERROR_TOLERANCE))
+    toc: list[TocEntry] = []
 
-    toc: Toc = []
-
-    def __init__(self, text: str, start: int = 0, end: int = 0):
+    def __init__(
+        self,
+        text: str,
+        *,
+        start: int = 0,
+        end: int = 0,
+        target_length: int = PAGE_LENGTH_TARGET,
+        error_tolerance: float = PAGE_LENGTH_ERROR_TOLERANCE,
+    ):
         self.text = text
         self.start = start
         self.end = len(text) if end == 0 else end
+        assert 0 < error_tolerance < 1
+        self.target_length = target_length
+        self.error_tolerance = error_tolerance
+        self.min_length = int(
+            self.target_length * (1 - self.error_tolerance),
+        )
+        self.max_length = int(
+            self.target_length * (1 + self.error_tolerance),
+        )
 
     def pages(self) -> Iterator[str]:
         """Split a text into pages of approximately equal length.
@@ -36,28 +50,33 @@ class PageSplitter:
             end = self.find_nearest_page_end(start)
 
             # Check for chapters near the end of the current page segment
-            chapter_search_text = self.text[
-                start + self.PAGE_MIN_LENGTH : start + self.PAGE_MAX_LENGTH
-            ]
+            chapter_search_text = self.text[start + self.min_length : start + self.max_length]
             if chapters := chapter_detector.get_chapters(chapter_search_text, page_num):
                 # Find the chapter position that is nearest to the target page size
-                target_position = start + self.PAGE_LENGTH_TARGET
-                # Use the character position (chapters[i][1]) to find the nearest chapter
+                target_position = start + self.target_length
+                # Use the position field from ChapterMatch to find the nearest chapter
                 nearest_chapter_idx = min(
                     range(len(chapters)),
                     key=lambda i: abs(
-                        (start + self.PAGE_MIN_LENGTH + chapters[i][1]) - target_position,
+                        (start + self.min_length + chapters[i].position) - target_position,
                     ),
                 )
                 # Set end to the start of the nearest chapter
-                end = start + self.PAGE_MIN_LENGTH + chapters[nearest_chapter_idx][1]
+                end = start + self.min_length + chapters[nearest_chapter_idx].position
 
             page_text = self.normalize(self.text[start:end])
 
             # Collect TOC entries for the current page
             if chapters := chapter_detector.get_chapters("\n\n" + page_text, page_num):
-                # Convert chapter matches to TOC entries (title, page, word)
-                toc_entries = [(title, page_num, word_num) for title, _, _, word_num in chapters]
+                # Convert chapter matches to TOC entries
+                toc_entries = [
+                    TocEntry(
+                        title=chapter.title,
+                        page_num=page_num,
+                        word_num=chapter.word_num,
+                    )
+                    for chapter in chapters
+                ]
                 self.toc.extend(toc_entries)
 
             yield page_text
@@ -67,18 +86,6 @@ class PageSplitter:
     def normalize(self, text: str) -> str:
         text = re.sub(r"\r", "", text)
         return re.sub(r"[ \t]+", " ", text)
-
-    def set_page_target(self, target_length: int, error_tolerance: int) -> None:
-        """Set book page target length and error tolerance."""
-        assert 0 < error_tolerance < 1
-        self.PAGE_LENGTH_TARGET = target_length  # noqa: N806
-        self.PAGE_LENGTH_ERROR_TOLERANCE = error_tolerance  # noqa: N806
-        self.PAGE_MIN_LENGTH = int(  # pnoqa: N806
-            self.PAGE_LENGTH_TARGET * (1 - self.PAGE_LENGTH_ERROR_TOLERANCE),
-        )
-        self.PAGE_MAX_LENGTH = int(  # noqa: N806
-            self.PAGE_LENGTH_TARGET * (1 + self.PAGE_LENGTH_ERROR_TOLERANCE),
-        )
 
     def find_nearest_page_end_match(
         self,
@@ -92,16 +99,16 @@ class PageSplitter:
         and PAGE_LENGTH_ERROR_TOLERANCE.
         """
         end_pos = min(
-            page_start_index + int(self.PAGE_MAX_LENGTH),
+            page_start_index + int(self.max_length),
             self.end,
         )
         start_pos = max(
-            page_start_index + int(self.PAGE_MIN_LENGTH),
+            page_start_index + int(self.min_length),
             self.start,
         )
         ends = [match.end() for match in pattern.finditer(self.text, start_pos, end_pos)]
         return (
-            min(ends, key=lambda x: abs(x - (page_start_index + self.PAGE_LENGTH_TARGET)))
+            min(ends, key=lambda x: abs(x - (page_start_index + self.target_length)))
             if ends
             else None
         )
@@ -123,7 +130,7 @@ class PageSplitter:
                 return self.handle_p_tag_split(page_start_index, nearest_page_end)
 
         # If no suitable end found, return the maximum allowed length
-        return min(page_start_index + self.end, page_start_index + self.PAGE_LENGTH_TARGET)
+        return min(page_start_index + self.end, page_start_index + self.target_length)
 
     def handle_p_tag_split(self, page_start_index: int, nearest_page_end: int) -> int:
         """Find the position of the last closing </p> tag before the split."""

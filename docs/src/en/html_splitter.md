@@ -17,7 +17,7 @@ More text that goes on and on and should also be split into multiple pages while
 </p>
 """
 
-for page in HtmlPageSplitter(html, target_page_size=50).pages():
+for page in HtmlPageSplitter(html, target_length=50).pages():
     print(page)
 ```
 

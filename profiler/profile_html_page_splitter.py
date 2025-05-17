@@ -22,7 +22,7 @@ def profile_splitting(html_content: str, target_size: int = 3000) -> list[str]:
     pr = cProfile.Profile()
     pr.enable()
 
-    splitter = HtmlPageSplitter(content=html_content, target_page_size=target_size)
+    splitter = HtmlPageSplitter(content=html_content, target_length=target_size)
     pages_list = list(splitter.pages())
 
     pr.disable()

@@ -1,7 +1,5 @@
 import pytest
 
-from pagesmith import PageSplitter
-
 
 @pytest.fixture(scope="function", params=["Hello 123 <br/> word/123 123-<word>\n<br/> and last!"])
 def sentence_6_words(request):
@@ -21,34 +19,6 @@ def complex_book_text():
     # Add some space between chapters to force page breaks
     padding = "\n\n" + ". " * 500 + "\n\n"
     return padding.join(chapters)
-
-
-def set_book_page_length(page_length):
-    PageSplitter.PAGE_LENGTH_TARGET = page_length  # Mocked target length for testing
-    PageSplitter.PAGE_LENGTH_ERROR_TOLERANCE = 0.5
-    PageSplitter.PAGE_MIN_LENGTH = int(
-        PageSplitter.PAGE_LENGTH_TARGET * (1 - PageSplitter.PAGE_LENGTH_ERROR_TOLERANCE)
-    )
-    PageSplitter.PAGE_MAX_LENGTH = int(
-        PageSplitter.PAGE_LENGTH_TARGET * (1 + PageSplitter.PAGE_LENGTH_ERROR_TOLERANCE)
-    )
-
-
-def mock_book_plain_text(page_length: int):
-    original_target = PageSplitter.PAGE_LENGTH_TARGET
-    set_book_page_length(page_length)
-    yield
-    set_book_page_length(original_target)
-
-
-@pytest.fixture
-def mock_page_splitter():
-    yield from mock_book_plain_text(30)
-
-
-@pytest.fixture
-def mock_page100_splitter():
-    yield from mock_book_plain_text(100)
 
 
 @pytest.fixture(

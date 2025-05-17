@@ -2,14 +2,26 @@
 
 import logging
 import re
-from typing import TypeAlias
+from typing import NamedTuple
 
 log = logging.getLogger()
 
 
-TocEntry: TypeAlias = tuple[str, int, int]  # <title>, <page num>, <word on the page num>
-Toc: TypeAlias = list[TocEntry]
-ChapterMatch: TypeAlias = tuple[str, int, int, int]  # <title>, <position>, <page_num>, <word_num>
+class TocEntry(NamedTuple):
+    """Table of contents entry."""
+
+    title: str
+    page_num: int
+    word_num: int
+
+
+class ChapterMatch(NamedTuple):
+    """Chapter match information."""
+
+    title: str
+    position: int
+    page_num: int
+    word_num: int
 
 
 class ChapterDetector:
@@ -18,18 +30,28 @@ class ChapterDetector:
     def get_chapters(self, page_text: str, page_num: int) -> list[ChapterMatch]:
         """Detect chapter headings in the text.
 
-        Return a list of tuples (chapter, position, page, word).
-        Position is the character position in the text where the chapter starts.
+        Return a list of ChapterMatch objects containing:
+        - title: The chapter title
+        - position: The character position in the text where the chapter starts
+        - page_num: The page number where the chapter appears
+        - word_num: The word number where the chapter starts on the page
         """
         patterns = self.prepare_chapter_patterns()
-        headings: list[ChapterMatch] = []
+        chapters: list[ChapterMatch] = []
         for pattern in patterns:
             for match in pattern.finditer(page_text):
                 title = match.group().replace("<br/>", " ").strip()
                 position = match.start()
                 word_num = self.get_word_num(page_text, position)
-                headings.append((title, position, page_num, word_num))
-        return headings
+                chapters.append(
+                    ChapterMatch(
+                        title=re.sub(r"[\s\r\t\n]+", " ", title),
+                        position=position,
+                        page_num=page_num,
+                        word_num=word_num,
+                    ),
+                )
+        return chapters
 
     def prepare_chapter_patterns(self) -> list[re.Pattern[str]]:  # pylint: disable=too-many-locals
         """Prepare regex patterns for detecting chapter headings."""
