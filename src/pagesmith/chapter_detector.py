@@ -4,15 +4,10 @@ import logging
 import re
 from typing import NamedTuple
 
+MIN_CHAPTER_DISTANCE = 20
+
+
 log = logging.getLogger()
-
-
-class TocEntry(NamedTuple):
-    """Table of contents entry."""
-
-    title: str
-    page_num: int
-    position: int
 
 
 class ChapterMatch(NamedTuple):
@@ -25,6 +20,15 @@ class ChapterMatch(NamedTuple):
 
 class ChapterDetector:
     """Detect chapters."""
+
+    def __init__(self, min_chapter_distance: int = MIN_CHAPTER_DISTANCE) -> None:
+        """Initialize the chapter detector.
+
+        min_chapter_distance: Minimum character distance required between chapters.
+            Chapter signatures detected within this threshold from previously detected chapters
+            will be ignored. Default is 20 characters.
+        """
+        self.min_chapter_distance = min_chapter_distance
 
     def get_chapters(self, page_text: str, page_num: int) -> list[ChapterMatch]:
         """Detect chapter headings in the text.
@@ -55,7 +59,6 @@ class ChapterDetector:
             return []
         sorted_chapters = sorted(chapters, key=lambda c: c.position)
 
-        position_threshold = 20  # for considering chapters as duplicates
         deduplicated: list[ChapterMatch] = []
         seen_titles = set()
 
@@ -64,7 +67,7 @@ class ChapterDetector:
                 continue
             if (
                 not deduplicated
-                or abs(deduplicated[-1].position - chapter.position) >= position_threshold
+                or abs(deduplicated[-1].position - chapter.position) >= self.min_chapter_distance
             ):
                 deduplicated.append(chapter)
                 seen_titles.add(chapter.title)
