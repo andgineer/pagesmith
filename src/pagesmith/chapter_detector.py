@@ -12,16 +12,15 @@ class TocEntry(NamedTuple):
 
     title: str
     page_num: int
-    word_num: int
+    position: int
 
 
 class ChapterMatch(NamedTuple):
     """Chapter match information."""
 
     title: str
-    position: int
     page_num: int
-    word_num: int
+    position: int
 
 
 class ChapterDetector:
@@ -32,26 +31,44 @@ class ChapterDetector:
 
         Return a list of ChapterMatch objects containing:
         - title: The chapter title
-        - position: The character position in the text where the chapter starts
         - page_num: The page number where the chapter appears
-        - word_num: The word number where the chapter starts on the page
+        - position: The character position in the text where the chapter starts
         """
         patterns = self.prepare_chapter_patterns()
         chapters: list[ChapterMatch] = []
         for pattern in patterns:
             for match in pattern.finditer(page_text):
-                title = match.group().replace("<br/>", " ").strip()
-                position = match.start()
-                word_num = self.get_word_num(page_text, position)
+                title = re.sub(r"([\s\r\t\n]|<br/>)+", " ", match.group("title"))
+                position = match.start("title")
                 chapters.append(
                     ChapterMatch(
-                        title=re.sub(r"[\s\r\t\n]+", " ", title),
+                        title=title,
                         position=position,
                         page_num=page_num,
-                        word_num=word_num,
                     ),
                 )
-        return chapters
+        return self._deduplicate_chapters(chapters)
+
+    def _deduplicate_chapters(self, chapters: list[ChapterMatch]) -> list[ChapterMatch]:
+        """Deduplicate chapters based on position and title."""
+        if not chapters:
+            return []
+        sorted_chapters = sorted(chapters, key=lambda c: c.position)
+
+        position_threshold = 20  # for considering chapters as duplicates
+        deduplicated: list[ChapterMatch] = []
+        seen_titles = set()
+
+        for chapter in sorted_chapters:
+            if chapter.title in seen_titles:
+                continue
+            if (
+                not deduplicated
+                or abs(deduplicated[-1].position - chapter.position) >= position_threshold
+            ):
+                deduplicated.append(chapter)
+                seen_titles.add(chapter.title)
+        return deduplicated
 
     def prepare_chapter_patterns(self) -> list[re.Pattern[str]]:  # pylint: disable=too-many-locals
         """Prepare regex patterns for detecting chapter headings."""
@@ -135,28 +152,18 @@ class ChapterDetector:
             rf"({arabic_numerals}|{roman_numerals})"
             rf"(\.|{space}){space}*({chapter_name})?({name_line})?{line_sep}"
         )
-        # todo may be we should extract only titles with names?
+        prefix = rf"({line_sep}{line_sep}|\A)"
         return [
             re.compile(
-                f"{line_sep}{line_sep}{templ_key_word}{line_sep}{line_sep}",
+                rf"{prefix}(?P<title>{templ_key_word}){line_sep}{line_sep}",
                 re.IGNORECASE,
             ),
             re.compile(
-                f"{line_sep}{line_sep}{templ_numbered}{line_sep}{line_sep}",
+                rf"{prefix}(?P<title>{templ_numbered}){line_sep}{line_sep}",
                 re.IGNORECASE,
             ),
             re.compile(
-                f"{line_sep}{line_sep}{templ_numbered_dbl_empty_line}{line_sep}{line_sep}",
+                rf"{prefix}(?P<title>{templ_numbered_dbl_empty_line}){line_sep}{line_sep}",
                 re.IGNORECASE,
             ),
         ]
-
-    def get_word_num(self, text: str, end: int | None = None) -> int:
-        """Get word number up to the given position.
-
-        Count words from 0.
-        """
-        if end is None:
-            end = len(text)
-        ignore_words = ["<br/>"]
-        return sum(1 for word in re.split(r"\s+", text[:end]) if word and word not in ignore_words)

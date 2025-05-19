@@ -64,34 +64,15 @@ def test_no_special_end():
 
 
 @allure.epic("Page splitter")
-def test_chapter_pattern(chapter_pattern):
-    splitter = PageSplitter(f"aa{chapter_pattern}34", error_tolerance=0.5, target_length=100)
-    pages = list(splitter.pages())
-    assert len(splitter.toc) == 1, f"chapter_pattern: {chapter_pattern}"
-    assert splitter.toc[0] == (
-        chapter_pattern.strip().replace("\n", " "),
-        1,
-        1,
-    )  # first word with index 0 is "aa"
-
-
-@allure.epic("Page splitter")
-def test_wrong_chapter_pattern(wrong_chapter_pattern):
-    splitter = PageSplitter(f"aa{wrong_chapter_pattern}34", error_tolerance=0.5, target_length=30)
-    list(splitter.pages())
-    assert len(splitter.toc) == 0, f"chapter_pattern: {wrong_chapter_pattern}"
-
-
-@allure.epic("Page splitter")
 def test_pages_shift_if_heading():
     chapter_pattern = "\n\nCHAPTER VII.\n\n"
     splitter = PageSplitter(
-        "a" * 16 + chapter_pattern + " " + "aaa", error_tolerance=0.5, target_length=30
+        "a" * 16 + chapter_pattern + " " + "a" * 38, error_tolerance=0.5, target_length=30
     )
     pages = list(splitter.pages())
     assert len(pages) == 3
-    assert pages[0] == "a" * 16
-    assert pages[1] == chapter_pattern
+    assert pages[0] == "a" * 16 + "\n\n"
+    assert pages[1].startswith(chapter_pattern.replace("\n", ""))
 
     splitter = PageSplitter(
         "a" * 16 + "\n123 aaaaaaaa\n" + "aaa", error_tolerance=0.5, target_length=30

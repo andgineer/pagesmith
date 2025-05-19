@@ -1,5 +1,7 @@
 import pytest
 
+from pagesmith import ChapterDetector
+
 
 @pytest.fixture(scope="function", params=["Hello 123 <br/> word/123 123-<word>\n<br/> and last!"])
 def sentence_6_words(request):
@@ -47,3 +49,9 @@ def chapter_pattern(request):
 )
 def wrong_chapter_pattern(request):
     return request.param
+
+
+@pytest.fixture
+def detector():
+    """Create a ChapterDetector instance for testing."""
+    return ChapterDetector()

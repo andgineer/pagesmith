@@ -3,7 +3,7 @@
 import re
 from collections.abc import Iterator
 
-from pagesmith.chapter_detector import ChapterDetector, TocEntry
+from pagesmith.chapter_detector import ChapterDetector
 
 PAGE_LENGTH_TARGET = 3000  # Target page length in characters
 PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
@@ -11,8 +11,6 @@ PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
 
 class PageSplitter:
     """Split text into pages"""
-
-    toc: list[TocEntry] = []
 
     def __init__(
         self,
@@ -43,7 +41,6 @@ class PageSplitter:
         """
         chapter_detector = ChapterDetector()
         start = self.start
-        self.toc = []
         page_num = 0
         while start < self.end:
             page_num += 1
@@ -64,22 +61,7 @@ class PageSplitter:
                 # Set end to the start of the nearest chapter
                 end = start + self.min_length + chapters[nearest_chapter_idx].position
 
-            page_text = self.normalize(self.text[start:end])
-
-            # Collect TOC entries for the current page
-            if chapters := chapter_detector.get_chapters("\n\n" + page_text, page_num):
-                # Convert chapter matches to TOC entries
-                toc_entries = [
-                    TocEntry(
-                        title=chapter.title,
-                        page_num=page_num,
-                        word_num=chapter.word_num,
-                    )
-                    for chapter in chapters
-                ]
-                self.toc.extend(toc_entries)
-
-            yield page_text
+            yield self.normalize(self.text[start:end])
             assert end > start
             start = end
 

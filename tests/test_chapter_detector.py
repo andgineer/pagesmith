@@ -1,205 +1,147 @@
-import allure
-
-from pagesmith import ChapterDetector, PageSplitter
-from pagesmith.page_splitter import PAGE_LENGTH_TARGET
+"""Tests for the ChapterDetector class."""
 
 
-@allure.epic("Book import")
-@allure.feature("Chapter detection")
-def test_get_word_num_words(sentence_6_words):
-    splitter = ChapterDetector()
-    assert splitter.get_word_num(sentence_6_words, len(sentence_6_words)) == 6
+class TestChapterDetector:
+    """Test suite for the ChapterDetector class."""
 
+    def test_arabic_numeral_chapter(self, detector):
+        """Test detection of chapters with Arabic numerals."""
+        text = "\n\nChapter 1. Introduction\n\n"
+        result = detector.get_chapters(text, 5)
 
-@allure.epic("Book import")
-@allure.feature("Chapter detection")
-def test_get_word_num_no_separators():
-    splitter = ChapterDetector()
-    assert splitter.get_word_num("a" * 10) == 1
+        assert len(result) == 1
+        assert result[0].title == "Chapter 1. Introduction"
+        assert result[0].page_num == 5
+        assert result[0].position == 2  # Position after first two newlines
 
+    def test_text_begin(self, detector):
+        """Test detection at beginning of text."""
+        text = "Chapter 1. Introduction\n\nChapter text\nChapter 2. Not at the beginning\n\n"
+        result = detector.get_chapters(text, 5)
 
-@allure.epic("Book import")
-@allure.feature("Page splitting")
-def test_toc_word_counts_simple():
-    """Test that TOC entries have correct word numbers for a simple case."""
-    # A simple text with one chapter heading
-    text = """Some introductory text.
+        assert len(result) == 1  # Only one chapter should be detected
+        assert result[0].title == "Chapter 1. Introduction"
+        assert result[0].page_num == 5
+        assert result[0].position == 0  # Beginning of the text
 
-Chapter 1
+    def test_roman_numeral_chapter(self, detector):
+        """Test detection of chapters with Roman numerals."""
+        text = "\n\nChapter IV. The Battle\n\n"
+        result = detector.get_chapters(text, 10)
 
-This is the first chapter content."""
+        assert len(result) == 1
+        assert result[0].title == "Chapter IV. The Battle"
+        assert result[0].page_num == 10
+        assert result[0].position == 2
 
-    splitter = PageSplitter(text)
-    # Collect all pages
-    pages = list(splitter.pages())
+    def test_word_number_chapter(self, detector):
+        """Test detection of chapters with number words."""
+        text = "\n\nChapter one: Beginning\n\n"
+        result = detector.get_chapters(text, 15)
 
-    # The TOC should have one entry for Chapter 1
-    assert len(splitter.toc) == 1
-    chapter, page_num, word_num = splitter.toc[0]
+        assert len(result) == 1
+        assert result[0].title == "Chapter one: Beginning"
+        assert result[0].page_num == 15
+        assert result[0].position == 2
 
-    assert chapter == "Chapter 1"
-    assert page_num == 1  # First page
+    def test_ordinal_word_chapter(self, detector):
+        """Test detection of chapters with ordinal words."""
+        text = "\n\nChapter the First - Origins\n\n"
+        result = detector.get_chapters(text, 20)
 
-    # Calculate expected word count
-    intro_words = len("Some introductory text.".split())
-    expected_word_count = intro_words  # Words before "Chapter 1"
+        assert len(result) == 1
+        assert result[0].title == "Chapter the First - Origins"
+        assert result[0].page_num == 20
+        assert result[0].position == 2
 
-    assert word_num == expected_word_count
+    def test_numbered_only_format(self, detector):
+        """Test detection of chapters with just a number and period."""
+        text = "\n\n1. The Beginning\n\n"
+        result = detector.get_chapters(text, 25)
 
+        assert len(result) == 1
+        assert result[0].title == "1. The Beginning"
+        assert result[0].page_num == 25
+        assert result[0].position == 2
 
-@allure.epic("Book import")
-@allure.feature("Page splitting")
-def test_toc_word_counts_multiple_chapters():
-    """Test that TOC entries have correct word numbers for multiple chapters."""
-    # Text with multiple chapters
-    text = """Prologue words here.
+    def test_roman_numbered_only_format(self, detector):
+        """Test detection of chapters with just a Roman numeral and period."""
+        text = "\n\nXII. The End\n\n"
+        result = detector.get_chapters(text, 30)
 
-Chapter I
+        assert len(result) == 1
+        assert result[0].title == "XII. The End"
+        assert result[0].page_num == 30
+        assert result[0].position == 2
 
-First chapter text.
+    def test_double_empty_line_format(self, detector):
+        """Test detection of chapters with double empty lines."""
+        text = "\n\n7. Final Chapter\n\n\n"
+        result = detector.get_chapters(text, 35)
 
-Chapter II
+        assert len(result) == 1
+        assert result[0].title == "7. Final Chapter"
+        assert result[0].page_num == 35
+        assert result[0].position == 2
 
-Second chapter text."""
+    def test_cyrillic_chapter_name(self, detector):
+        """Test detection of chapters with Cyrillic names."""
+        text = "\n\nГлава 5 Новое начало\n\n"
+        result = detector.get_chapters(text, 40)
 
-    splitter = PageSplitter(text)
-    # Collect all pages
-    pages = list(splitter.pages())
+        assert len(result) == 1
+        assert result[0].title == "Глава 5 Новое начало"
+        assert result[0].page_num == 40
+        assert result[0].position == 2
 
-    # The TOC should have two entries
-    assert len(splitter.toc) == 2
+    def test_chapter_with_br_tag(self, detector):
+        """Test detection of chapters with <br/> tags."""
+        text = "\n\nChapter 3<br/>The Journey\n\n"
+        result = detector.get_chapters(text, 45)
 
-    # Check first chapter
-    chapter1, page_num1, word_num1 = splitter.toc[0]
-    assert chapter1 == "Chapter I"
-    print(pages[page_num1 - 1], word_num1)
-    assert page_num1 == 1
+        assert len(result) == 1
+        assert result[0].title == "Chapter 3 The Journey"  # <br/> should be replaced with space
+        assert result[0].page_num == 45
+        assert result[0].position == 2
 
-    # Words before "Chapter I"
-    prologue_words = len("Prologue words here.".split())
-    expected_chapter1_word = prologue_words  # Count words from 0
-    assert word_num1 == expected_chapter1_word
+    def test_multiple_chapters_on_page(self, detector):
+        """Test detection of multiple chapters on a single page."""
+        chapter1 = "\n\nChapter 1. Introduction\n\nLorem ipsum...\n\n"
+        chapter2 = "Chapter 2. Development\n\n"
+        text = f"{chapter1}{chapter2}"
+        result = detector.get_chapters(text, 50)
 
-    # Check second chapter
-    chapter2, page_num2, word_num2 = splitter.toc[1]
-    assert chapter2 == "Chapter II"
-    assert page_num2 == 1  # Still on first page
+        assert len(result) == 2
+        assert result[0].title == "Chapter 1. Introduction"
+        assert result[0].page_num == 50
+        assert result[0].position == 2  # Position after first two newlines
 
-    # Words before "Chapter II" (prologue + first chapter heading + first chapter text)
-    first_chapter_text_words = len("First chapter text.".split())
-    expected_word_count2 = (
-        expected_chapter1_word + 2 + first_chapter_text_words
-    )  # +2 for "Chapter I"
-    assert word_num2 == expected_word_count2
+        print(f"Chapter 1 position: {text[result[1].position :]}")
+        assert result[1].title == "Chapter 2. Development"
+        assert result[1].page_num == 50
+        assert result[1].position == len(chapter1)
 
+    def test_no_chapters_found(self, detector):
+        """Test behavior when no chapters are found."""
+        text = "This is just regular text with no chapter headings."
+        result = detector.get_chapters(text, 55)
 
-@allure.epic("Book import")
-@allure.feature("Page splitting")
-def test_toc_word_counts_across_pages():
-    """Test that TOC entries have correct word numbers when chapters span multiple pages."""
-    # Create a long text that will span multiple pages
-    word_len = len("x ")
-    first_page_filler_words_count = int(PAGE_LENGTH_TARGET * 0.9) // word_len
+        assert len(result) == 0
 
-    # Create first page with a chapter at the end closer than target size possible tolerance
-    first_page = "x " * first_page_filler_words_count + "\n\nChapter 1\n\n" + "Some text. " * 5
+    def test_whitespace_normalization(self, detector):
+        """Test that whitespace is properly normalized in chapter titles."""
+        text = "\n\nChapter  6\t \nThe   Final  Battle\n\r\n"
+        result = detector.get_chapters(text, 60)
 
-    # Create second page with a chapter even closer to the target size
-    second_page = "\n\nChapter 2\n\nMore text."
+        assert len(result) == 1
+        assert result[0].title == "Chapter 6 The Final Battle"  # Whitespace should be normalized
+        assert result[0].page_num == 60
+        assert result[0].position == 2
 
-    text = first_page + second_page
+    def test_prepare_chapter_patterns(self, detector):
+        """Test that chapter patterns are correctly prepared."""
+        patterns = detector.prepare_chapter_patterns()
 
-    splitter = PageSplitter(text)
-    # Collect all pages
-    pages = list(splitter.pages())
-    print(pages)
-    print(first_page_filler_words_count)
-    print(first_page_filler_words_count * word_len / PAGE_LENGTH_TARGET)
-    print([(len(page), len(page) / PAGE_LENGTH_TARGET) for page in pages])
-
-    # The TOC should have two entries
-    assert len(splitter.toc) == 2
-
-    # Check first chapter
-    chapter1, page_num1, word_num1 = splitter.toc[0]
-    assert chapter1 == "Chapter 1"
-    assert page_num1 == 1  # First page
-    assert word_num1 == first_page_filler_words_count
-
-    # Check second chapter
-    chapter2, page_num2, word_num2 = splitter.toc[1]
-    assert chapter2 == "Chapter 2"
-    assert page_num2 == 2  # Second page
-    assert word_num2 == 0
-
-
-@allure.epic("Book import")
-@allure.feature("Page splitting")
-def test_toc_integration_with_chapter_detector():
-    """Test that PageSplitter correctly integrates with ChapterDetector for word counting."""
-    # Create a mock ChapterDetector that we can spy on
-    original_get_word_num = ChapterDetector.get_word_num
-
-    call_args = []
-
-    def mock_get_word_num(self, text, end=None):
-        call_args.append((text, end))
-        return original_get_word_num(self, text, end)
-
-    # Replace the method temporarily
-    ChapterDetector.get_word_num = mock_get_word_num
-
-    try:
-        # Text with a chapter
-        text = """Intro text.
-
-Chapter 5
-
-Chapter content."""
-
-        splitter = PageSplitter(text)
-        # Process all pages
-        pages = list(splitter.pages())
-
-        # Verify that get_word_num was called with the right parameters
-        assert len(call_args) > 0
-
-        # The TOC should have one entry
-        assert len(splitter.toc) == 1
-        chapter, page_num, word_num = splitter.toc[0]
-
-        assert chapter == "Chapter 5"
-        assert page_num == 1
-
-        # Verify that the word count matches what we expect
-        intro_words = len("Intro text.".split())
-        assert word_num == intro_words
-
-    finally:
-        # Restore the original method
-        ChapterDetector.get_word_num = original_get_word_num
-
-
-@allure.epic("Book import")
-@allure.feature("Page splitting")
-def test_toc_word_counts_in_complex_book(complex_book_text):
-    """Test TOC word counts in a more complex book with multiple pages and chapters."""
-    splitter = PageSplitter(complex_book_text)
-    pages = list(splitter.pages())
-
-    # Should have 4 chapters in the TOC
-    assert len(splitter.toc) == 4
-
-    # Check that each chapter is on the correct page
-    # and has a reasonable word number
-    for i, (chapter, page_num, word_num) in enumerate(splitter.toc, 1):
-        # Chapter title should match pattern
-        assert f"Chapter {i}" in chapter
-
-        # Word number should be a non-positive integer
-        assert word_num >= 0
-
-        # For chapters after the first, page number should increase
-        if i > 1:
-            prev_page = splitter.toc[i - 2][1]
-            assert page_num >= prev_page
+        assert len(patterns) == 3  # Should return 3 compiled regex patterns
+        for pattern in patterns:
+            assert hasattr(pattern, "match")  # Verify these are compiled regex patterns
