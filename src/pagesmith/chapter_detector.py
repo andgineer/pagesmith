@@ -42,7 +42,7 @@ class ChapterDetector:
         chapters: list[ChapterMatch] = []
         for pattern in patterns:
             for match in pattern.finditer(page_text):
-                title = re.sub(r"([\s\r\t\n]|<br/>)+", " ", match.group("title"))
+                title = re.sub(r"([\s\r\t\n]|<br/>)+", " ", match.group("title")).strip()
                 position = match.start("title")
                 chapters.append(
                     ChapterMatch(

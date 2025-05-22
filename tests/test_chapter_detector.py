@@ -6,7 +6,7 @@ class TestChapterDetector:
 
     def test_arabic_numeral_chapter(self, detector):
         """Test detection of chapters with Arabic numerals."""
-        text = "\n\nChapter 1. Introduction\n\n"
+        text = "\n\nChapter 1. Introduction \n\n"  # space should be stripped
         result = detector.get_chapters(text, 5)
 
         assert len(result) == 1
