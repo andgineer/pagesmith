@@ -1,4 +1,3 @@
-# pragma: no cover
 """Obsolete module to clean HTML using BeautifulSoup."""
 
 import logging
