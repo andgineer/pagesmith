@@ -1,5 +1,6 @@
+# HTML страницы
 
-# Разбиение HTML на страницы
+## Разбиение HTML на страницы
 
 С помощью класса [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
 
@@ -52,3 +53,7 @@ for page in HtmlPageSplitter(html, target_length=50).pages():
         <p><span class="another-long-class-that-should-not-be-split">страниц при сохранении структуры HTML
         </span></p>
         ```
+
+## Очистка HTML
+
+[refine_html][pagesmith.refine_html.refine_html] очищает HTML от не нужных для чтения тэгов и убирает излишние вертикальные промежутки.

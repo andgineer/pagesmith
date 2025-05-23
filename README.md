@@ -2,12 +2,16 @@
 [![Coverage](https://raw.githubusercontent.com/andgineer/pagesmith/python-coverage-comment-action-data/badge.svg)](https://htmlpreview.github.io/?https://github.com/andgineer/pagesmith/blob/python-coverage-comment-action-data/htmlcov/index.html)
 # pagesmith
 
-Splitting HTML into pages, preserving HTML tags while respecting the original document structure and text integrity.
+Splitting HTML into pages, preserving HTML tags while respecting the original document structure.
+Utilize blazingly fast lxml parser.
+
+Splitting pure text into pages at natural break points such as paragraphs or sentences.
+
+Detect chapters in pure text to create a Table of Contents.
 
 # Documentation
 
 [Pagesmith](https://andgineer.github.io/pagesmith/)
-
 
 
 # Developers

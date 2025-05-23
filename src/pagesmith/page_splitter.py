@@ -10,7 +10,7 @@ PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
 
 
 class PageSplitter:
-    """Split text into pages"""
+    """Split pure text into pages at natural break points such as paragraphs or sentences."""
 
     def __init__(
         self,

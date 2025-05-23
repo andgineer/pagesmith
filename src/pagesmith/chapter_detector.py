@@ -10,8 +10,8 @@ MIN_CHAPTER_DISTANCE = 20
 log = logging.getLogger()
 
 
-class ChapterMatch(NamedTuple):
-    """Chapter match information."""
+class Chapter(NamedTuple):
+    """Chapter information."""
 
     title: str
     page_num: int
@@ -19,7 +19,7 @@ class ChapterMatch(NamedTuple):
 
 
 class ChapterDetector:
-    """Detect chapters."""
+    """Detect chapters in pure text to create a Table of Contents."""
 
     def __init__(self, min_chapter_distance: int = MIN_CHAPTER_DISTANCE) -> None:
         """Initialize the chapter detector.
@@ -30,7 +30,7 @@ class ChapterDetector:
         """
         self.min_chapter_distance = min_chapter_distance
 
-    def get_chapters(self, page_text: str, page_num: int) -> list[ChapterMatch]:
+    def get_chapters(self, page_text: str, page_num: int) -> list[Chapter]:
         """Detect chapter headings in the text.
 
         Return a list of ChapterMatch objects containing:
@@ -39,13 +39,13 @@ class ChapterDetector:
         - position: The character position in the text where the chapter starts
         """
         patterns = self.prepare_chapter_patterns()
-        chapters: list[ChapterMatch] = []
+        chapters: list[Chapter] = []
         for pattern in patterns:
             for match in pattern.finditer(page_text):
                 title = re.sub(r"([\s\r\t\n]|<br/>)+", " ", match.group("title")).strip()
                 position = match.start("title")
                 chapters.append(
-                    ChapterMatch(
+                    Chapter(
                         title=title,
                         position=position,
                         page_num=page_num,
@@ -53,13 +53,13 @@ class ChapterDetector:
                 )
         return self._deduplicate_chapters(chapters)
 
-    def _deduplicate_chapters(self, chapters: list[ChapterMatch]) -> list[ChapterMatch]:
+    def _deduplicate_chapters(self, chapters: list[Chapter]) -> list[Chapter]:
         """Deduplicate chapters based on position and title."""
         if not chapters:
             return []
         sorted_chapters = sorted(chapters, key=lambda c: c.position)
 
-        deduplicated: list[ChapterMatch] = []
+        deduplicated: list[Chapter] = []
         seen_titles = set()
 
         for chapter in sorted_chapters:

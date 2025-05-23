@@ -11,7 +11,9 @@ PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
 
 
 class HtmlPageSplitter:
-    """Split HTML content into pages of approximately equal length."""
+    """Split HTML into pages,
+    preserving HTML tags while respecting the original document structure.
+    """
 
     def __init__(
         self,

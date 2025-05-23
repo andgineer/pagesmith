@@ -1,5 +1,6 @@
+# HTML pages
 
-# Split HTML to Pages
+## Split HTML to Pages
 
 Use class [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
 
@@ -52,3 +53,9 @@ for page in HtmlPageSplitter(html, target_length=50).pages():
         <p><span class="another-long-class-that-should-not-be-split">the HTML structure
         </span></p>
         ```
+
+## Refine HTML
+
+[refine_html][pagesmith.refine_html.refine_html] is a utility for cleaning up HTML content.
+
+It removes unnecessary for reading tags and vertical gaps.

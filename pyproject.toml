@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pagesmith"
 dynamic = [ "version",]
-description = "Splitting HTML into pages, preserving HTML tags while respecting the original document structure and text integrity."
+description = "HTML page splitter (preserves tags), text page splitter (natural breaks), and chapter detector for pure text."
 keywords = [ "one", "two", ]
 classifiers = [ "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
 readme = "README.md"

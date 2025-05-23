@@ -1,4 +1,6 @@
-# Разбиение текста на страницы
+# Текстовые страницы
+
+## Разбиение текста на страницы
 
 С помощью класса [PageSplitter][pagesmith.PageSplitter]
 
@@ -11,3 +13,47 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 for page in PageSplitter(text, target_page_size=50).pages():
     print(page)
 ```
+
+## Обнаружение глав в тексте
+
+Используйте класс [ChapterDetector][pagesmith.ChapterDetector] для поиска заголовков глав в обычном тексте.
+
+```python
+from pagesmith import ChapterDetector
+
+page1_text = """
+Здесь какой-то вводный текст.
+
+Глава 1. Начало
+
+Это содержимое первой главы с большим количеством текста, который продолжается и продолжается.
+
+Глава 2. Развитие
+
+Больше содержимого здесь для второй главы.
+
+XII. Последняя глава
+
+Заключительное содержимое.
+"""
+
+detector = ChapterDetector()
+chapters = detector.get_chapters(page1_text, page_num=1)
+
+for chapter in chapters:
+    print(f"{chapter.title} (страница {chapter.page_num}, позиция {chapter.position})")
+```
+
+!!! example "Результат"
+
+    ```
+    Глава 1. Начало (страница 1, позиция 42)
+    Глава 2. Развитие (страница 1, позиция 134)
+    XII. Последняя глава (страница 1, позиция 201)
+    ```
+
+Детектор распознает различные форматы глав:
+
+- "Chapter 1", "Chapter I", "Chapter one"
+- "1. Заголовок", "XII. Заголовок"
+- Многоязычные: "Глава 1", "Glava 1"
