@@ -14,7 +14,6 @@ class Chapter(NamedTuple):
     """Chapter information."""
 
     title: str
-    page_num: int
     position: int
 
 
@@ -30,12 +29,11 @@ class ChapterDetector:
         """
         self.min_chapter_distance = min_chapter_distance
 
-    def get_chapters(self, page_text: str, page_num: int) -> list[Chapter]:
+    def get_chapters(self, page_text: str) -> list[Chapter]:
         """Detect chapter headings in the text.
 
-        Return a list of ChapterMatch objects containing:
+        Return a list of Chapter objects containing:
         - title: The chapter title
-        - page_num: The page number where the chapter appears
         - position: The character position in the text where the chapter starts
         """
         patterns = self.prepare_chapter_patterns()
@@ -48,7 +46,6 @@ class ChapterDetector:
                     Chapter(
                         title=title,
                         position=position,
-                        page_num=page_num,
                     ),
                 )
         return self._deduplicate_chapters(chapters)

@@ -48,7 +48,7 @@ class PageSplitter:
 
             # Check for chapters near the end of the current page segment
             chapter_search_text = self.text[start + self.min_length : start + self.max_length]
-            if chapters := chapter_detector.get_chapters(chapter_search_text, page_num):
+            if chapters := chapter_detector.get_chapters(chapter_search_text):
                 # Find the chapter position that is nearest to the target page size
                 target_position = start + self.target_length
                 # Use the position field from ChapterMatch to find the nearest chapter

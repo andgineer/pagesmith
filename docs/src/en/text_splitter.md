@@ -38,18 +38,18 @@ The ending content.
 """
 
 detector = ChapterDetector()
-chapters = detector.get_chapters(page1_text, page_num=1)
+chapters = detector.get_chapters(page1_text)
 
 for chapter in chapters:
-    print(f"{chapter.title} (page {chapter.page_num}, position {chapter.position})")
+    print(f"{chapter.title} (position {chapter.position})")
 ```
 
 !!! example "Output"
 
     ```
-    Chapter 1. The Beginning (page 1, position 42)
-    Chapter 2. The Development (page 1, position 134)
-    XII. The Final Chapter (page 1, position 201)
+    Chapter 1. The Beginning (position 42)
+    Chapter 2. The Development (position 134)
+    XII. The Final Chapter (position 201)
     ```
 
 The detector recognizes various chapter formats:

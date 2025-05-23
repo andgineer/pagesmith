@@ -38,18 +38,18 @@ XII. Последняя глава
 """
 
 detector = ChapterDetector()
-chapters = detector.get_chapters(page1_text, page_num=1)
+chapters = detector.get_chapters(page1_text)
 
 for chapter in chapters:
-    print(f"{chapter.title} (страница {chapter.page_num}, позиция {chapter.position})")
+    print(f"{chapter.title} (позиция {chapter.position})")
 ```
 
 !!! example "Результат"
 
     ```
-    Глава 1. Начало (страница 1, позиция 42)
-    Глава 2. Развитие (страница 1, позиция 134)
-    XII. Последняя глава (страница 1, позиция 201)
+    Глава 1. Начало (позиция 42)
+    Глава 2. Развитие (позиция 134)
+    XII. Последняя глава (позиция 201)
     ```
 
 Детектор распознает различные форматы глав:
