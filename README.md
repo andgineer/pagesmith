@@ -6,7 +6,7 @@
 |----------------------------------------------- | -------: | -------: | ------: | --------: |
 | src/pagesmith/\_\_about\_\_.py                 |        1 |        0 |    100% |           |
 | src/pagesmith/chapter\_detector.py             |       53 |        0 |    100% |           |
-| src/pagesmith/html\_page\_splitter.py          |      154 |       17 |     89% |37, 109-110, 127, 132, 141, 153, 166, 171-175, 178, 192-193, 229, 270 |
+| src/pagesmith/html\_page\_splitter.py          |      154 |       17 |     89% |39, 111-112, 129, 134, 143, 155, 168, 173-177, 180, 194-195, 231, 272 |
 | src/pagesmith/page\_splitter.py                |       51 |        2 |     96% |   127-128 |
 | src/pagesmith/parser.py                        |       22 |        0 |    100% |           |
 | src/pagesmith/refine\_html.py                  |      187 |       24 |     87% |93-95, 174, 252, 263-272, 340, 378, 383, 397-406 |
