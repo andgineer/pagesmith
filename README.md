@@ -6,11 +6,11 @@
 |-------------------------------------- | -------: | -------: | ------: | --------: |
 | src/pagesmith/\_\_about\_\_.py        |        1 |        0 |    100% |           |
 | src/pagesmith/chapter\_detector.py    |       52 |        0 |    100% |           |
-| src/pagesmith/html\_page\_splitter.py |      154 |       17 |     89% |39, 111-112, 129, 134, 143, 155, 168, 173-177, 180, 194-195, 231, 272 |
+| src/pagesmith/html\_page\_splitter.py |      145 |       22 |     85% |39, 76-78, 86-88, 106-107, 124, 129, 138, 150, 163, 168-172, 175, 189-190, 226 |
 | src/pagesmith/page\_splitter.py       |       51 |        2 |     96% |   127-128 |
-| src/pagesmith/parser.py               |       22 |        0 |    100% |           |
-| src/pagesmith/refine\_html.py         |      187 |       24 |     87% |93-95, 174, 252, 263-272, 340, 378, 383, 397-406 |
-|                             **TOTAL** |  **467** |   **43** | **91%** |           |
+| src/pagesmith/parser.py               |       85 |       13 |     85% |38-45, 57, 62, 85, 123, 128, 136 |
+| src/pagesmith/refine\_html.py         |      158 |       25 |     84% |94-96, 168, 172-175, 253, 264-273, 295, 354-363 |
+|                             **TOTAL** |  **492** |   **62** | **87%** |           |
 
 
 ## Setup coverage badge
