@@ -4,7 +4,7 @@ from typing import Any
 
 from lxml import etree
 
-from pagesmith.parser import etree_to_str
+from pagesmith.parser import etree_to_str, parse_partial_html
 
 PAGE_LENGTH_TARGET = 3000  # Target page length in characters
 PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
@@ -38,12 +38,7 @@ class HtmlPageSplitter:
         if root is not None:
             self.root = root
         elif content is not None and content.strip():
-            parser = etree.HTMLParser(recover=True, encoding="utf-8")
-            doc = etree.fromstring(content.encode("utf-8"), parser)  # noqa: S320
-
-            # Extract body content if it exists
-            body = doc.find(".//body")
-            self.root = body if body is not None else doc
+            self.root = parse_partial_html(content)
         else:
             self.root = None
 
@@ -268,16 +263,6 @@ class HtmlPageSplitter:
 
     def _render_page(self, elements: list[etree._Element]) -> str:
         """Render a page from a list of elements."""
-        if not elements:
-            return ""
-
         if len(elements) == 1:
-            html = etree_to_str(elements[0])
-        else:
-            # Create wrapper for multiple elements
-            wrapper = etree.Element("root")
-            for elem in elements:
-                wrapper.append(elem)
-            html = etree_to_str(wrapper)
-
-        return html
+            return etree_to_str(elements[0])
+        return "".join(etree_to_str(elem) for elem in elements)

@@ -5,7 +5,7 @@ from typing import Optional
 
 from lxml import etree
 
-from pagesmith.parser import etree_to_str, parse_partial_html
+from pagesmith.parser import etree_to_str, parse_partial_html, unwrap_element
 
 TAGS_WITH_CLASSES = {
     "h1": "display-4 fw-semibold text-primary mb-4",
@@ -51,6 +51,7 @@ ALLOWED_TAGS = (
     "blockquote",
     "sub",
     "small",
+    "sup",
 )
 
 CDATA_START = "<![CDATA["
@@ -293,10 +294,10 @@ def has_meaningful_content(
     if element_id in ids_to_keep_set:
         return True
 
-    if element.text and element.text.strip():
+    if element.text and re.sub(r"\s+", " ", element.text).strip():
         return True
 
-    if check_tail and element.tail and element.tail.strip():
+    if check_tail and element.tail and re.sub(r"\s+", " ", element.tail).strip():
         return True
 
     return any(
@@ -321,6 +322,7 @@ def unwrap_unknow_tags(  # noqa: C901,PLR0912
     ids_to_keep_set: set[str],
     root: etree.Element,
 ) -> None:
+    """Unwrap tags that are not in the allowed set but preserve their content."""
     elements_to_unwrap = []
     for element in root.iter():
         if element is root:
@@ -329,60 +331,15 @@ def unwrap_unknow_tags(  # noqa: C901,PLR0912
         tag_name = element.tag
         element_id = element.get("id", "")
 
+        # Only unwrap if tag is not allowed AND doesn't have a protected ID
         if tag_name not in allowed_tags_set and (
             not element_id or element_id not in ids_to_keep_set
         ):
             elements_to_unwrap.append(element)
 
+    # Process in reverse order to avoid parent-child issues
     for element in reversed(elements_to_unwrap):
-        parent = element.getparent()
-        if parent is None:
-            continue
-
-        pos = parent.index(element)
-
-        # Handle text content
-        if element.text:
-            if pos > 0:
-                # Add to tail of previous sibling
-                prev = parent[pos - 1]
-                if prev.tail:
-                    prev.tail += element.text
-                else:
-                    prev.tail = element.text
-            # Add to parent's text
-            elif parent.text:
-                parent.text += element.text
-            else:
-                parent.text = element.text
-
-        # Move each child to parent
-        children = list(element)
-        for i, child in enumerate(children):
-            parent.insert(pos + i, child)
-
-        # Handle tail text
-        if element.tail:
-            if len(children) > 0:
-                # Add to tail of last child
-                if children[-1].tail:
-                    children[-1].tail += element.tail
-                else:
-                    children[-1].tail = element.tail
-            elif pos > 0:
-                # Add to tail of previous sibling
-                prev = parent[pos - 1]
-                if prev.tail:
-                    prev.tail += element.tail
-                else:
-                    prev.tail = element.tail
-            # Add to parent's text
-            elif parent.text:
-                parent.text += element.tail
-            else:
-                parent.text = element.tail
-
-        parent.remove(element)
+        unwrap_element(element)
 
 
 def remove_tags_with_content(root: etree.Element, tags_to_remove_set: set[str]) -> None:

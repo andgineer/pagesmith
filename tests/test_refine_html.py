@@ -1170,3 +1170,11 @@ class TestClearHtmlComplexEdgeCases:
 
         # Compare normalized versions
         assert normalize_whitespace(str(result_soup)) == normalize_whitespace(str(expected_soup))
+
+
+@allure.epic("Clear HTML")
+def test_refine_tolstoy():
+    with open("tests/resources/tolstoy_page.txt", encoding="utf8") as f:
+        input_html = f.read()
+        result = refine_html(input_html)
+        assert result != ""
