@@ -3,13 +3,31 @@ import re
 from lxml import etree, html
 
 HTML_TAG_REPLACEMENT = "htmlpagesmith"
+TAGS_TO_REPLACE = {
+    "html": HTML_TAG_REPLACEMENT,
+    "head": "headpagesmith",
+}
 
 
 def parse_partial_html(input_html: str) -> etree._Element | None:  # noqa: C901,PLR0912
-    """Parse string with HTML fragment into an lxml tree.
+    """Parse string with HTML fragment or full document into an lxml tree.
 
-    Supports partial HTML content.
-    Removes comments and CDATA.
+    Handles malformed HTML gracefully and preserves content structure as much as possible.
+
+    Note:
+        The returned element tree have a 'root' wrapper element that
+        contains the actual parsed content.
+        Use `etree_to_str()` to get the clean HTML output without the wrapper.
+
+    Features:
+    - Removes comments and CDATA sections
+    - Handles partial/fragment HTML (no need for complete document structure)
+    - Recovers from malformed HTML using lxml's error recovery
+    - Suppress lxml special handling for tags `html`, `head` and treat them as normal tags
+
+    Returns:
+        lxml Element tree, wrapped in a 'root' container element
+        or None if parsing completely fails
     """
 
     # Clean up comments
@@ -23,22 +41,22 @@ def parse_partial_html(input_html: str) -> etree._Element | None:  # noqa: C901,
     input_html = re.sub(r"(<!\[CDATA\[.*?]]>|<!DOCTYPE[^>]*?>)", "", input_html, flags=re.DOTALL)
 
     # Temporarily replace HTML tags to avoid special treatment by lxml
-    input_html = re.sub(
-        r"<html(\s[^>]*)?>",
-        rf"<{HTML_TAG_REPLACEMENT}\1>",
-        input_html,
-        flags=re.IGNORECASE,
-    )
-    input_html = re.sub(r"</html>", rf"</{HTML_TAG_REPLACEMENT}>", input_html, flags=re.IGNORECASE)
+    for tag, replacement in TAGS_TO_REPLACE.items():
+        input_html = re.sub(
+            rf"<{tag}(\s[^>]*)?>",
+            rf"<{replacement}\1>",
+            input_html,
+            flags=re.IGNORECASE,
+        )
+        input_html = re.sub(rf"</{tag}>", rf"</{replacement}>", input_html, flags=re.IGNORECASE)
 
     parser = etree.HTMLParser(recover=True, remove_comments=True, remove_pis=True)
     try:
         # Use HTML parser with fragments_fromstring
-        fragments = html.fragments_fromstring(input_html, parser=parser)
+        fragments = html.fragments_fromstring(f"<root>{input_html}</root>", parser=parser)
     except AssertionError:
         try:
-            wrapped_html = f"<root>{input_html}</root>"
-            fragments = etree.fromstring(wrapped_html, parser=parser)
+            fragments = html.document_fromstring(f"<root>{input_html}</root>", parser=parser)
         except Exception:  # noqa: BLE001
             # Last resort: return as text in a fake root element
             fragments = html.Element("root")
@@ -75,7 +93,30 @@ def parse_partial_html(input_html: str) -> etree._Element | None:  # noqa: C901,
             for element in html_tags:
                 unwrap_element(element)
 
+        for tag, replacement in TAGS_TO_REPLACE.items():
+            for elem in result.xpath(f".//{replacement}"):
+                elem.tag = tag
+
     return result
+
+
+def etree_to_str(root: etree._Element | None) -> str:
+    """Convert etree back to string, removing root wrapper."""
+    if root is None:
+        return ""
+
+    if isinstance(root, str):
+        return root
+
+    # If this is our root wrapper, extract its contents
+    if root.tag == "root":
+        result = root.text or ""
+        for child in root:
+            result += html.tostring(child, encoding="unicode", method="html")
+        return result
+
+    # For normal elements, return as-is using HTML serialization
+    return html.tostring(root, encoding="unicode", method="html")  # type: ignore[no-any-return]
 
 
 def unwrap_element(element: etree.Element) -> None:  # noqa: PLR0912,C901
@@ -128,22 +169,3 @@ def unwrap_element(element: etree.Element) -> None:  # noqa: PLR0912,C901
             parent.text = element.tail
 
     parent.remove(element)
-
-
-def etree_to_str(root: etree._Element | None) -> str:
-    """Convert etree back to string, removing root wrapper."""
-    if root is None:
-        return ""
-
-    if isinstance(root, str):
-        return root
-
-    # If this is our root wrapper, extract its contents
-    if root.tag == "root":
-        result = root.text or ""
-        for child in root:
-            result += html.tostring(child, encoding="unicode", method="html")
-        return result
-
-    # For normal elements, return as-is using HTML serialization
-    return html.tostring(root, encoding="unicode", method="html")  # type: ignore[no-any-return]

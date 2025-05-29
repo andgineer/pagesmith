@@ -613,7 +613,7 @@ class TestClearHtmlComplexEdgeCases:
                     Text after elements
                     """,
                 """
-                    <p>Text before elements </p><div>Content inside div</div>
+                    Text before elements <div>Content inside div</div>
                     Text between elements
                     <p>Content inside paragraph</p>
                     Text after elements
