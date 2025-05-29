@@ -2,10 +2,11 @@ import re
 
 from lxml import etree, html
 
-HTML_TAG_REPLACEMENT = "htmlpagesmith"
+FAKE_ROOT = "pagesmith-root"
+HTML_TAG_REPLACEMENT = "pagesmith-html"
 TAGS_TO_REPLACE = {
     "html": HTML_TAG_REPLACEMENT,
-    "head": "headpagesmith",
+    "head": "pagesmith-head",
 }
 
 
@@ -52,9 +53,12 @@ def parse_partial_html(input_html: str) -> etree._Element | None:  # noqa: C901,
 
     parser = etree.HTMLParser(recover=True, remove_comments=True, remove_pis=True)
     try:
-        fragments = html.fragments_fromstring(f"<root>{input_html}</root>", parser=parser)
+        fragments = html.fragments_fromstring(
+            f"<{FAKE_ROOT}>{input_html}</{FAKE_ROOT}>",
+            parser=parser,
+        )
     except Exception:  # noqa: BLE001
-        fragments = html.Element("root")
+        fragments = html.Element(FAKE_ROOT)
         fragments.text = input_html
 
     result = fragments[0]
@@ -89,7 +93,7 @@ def etree_to_str(root: etree._Element | None) -> str:
         return root
 
     # If this is our root wrapper, extract its contents
-    if root.tag == "root":
+    if root.tag == FAKE_ROOT:
         result = root.text or ""
         for child in root:
             result += html.tostring(child, encoding="unicode", method="html")

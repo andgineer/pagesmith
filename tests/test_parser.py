@@ -4,6 +4,7 @@ from lxml import html
 
 from pagesmith import parse_partial_html
 from pagesmith import etree_to_str
+from pagesmith.parser import FAKE_ROOT
 
 
 @allure.epic("HTML parser")
@@ -405,7 +406,7 @@ class TestEtreeFunctionality:
         assert hasattr(e, "__iter__")
 
         # Get the actual div element (skip root wrapper if present)
-        if e.tag == "root" and len(e) == 1:
+        if e.tag == FAKE_ROOT and len(e) == 1:
             div_elem = e[0]
         else:
             div_elem = e
