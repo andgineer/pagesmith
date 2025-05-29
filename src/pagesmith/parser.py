@@ -52,32 +52,12 @@ def parse_partial_html(input_html: str) -> etree._Element | None:  # noqa: C901,
 
     parser = etree.HTMLParser(recover=True, remove_comments=True, remove_pis=True)
     try:
-        # Use HTML parser with fragments_fromstring
         fragments = html.fragments_fromstring(f"<root>{input_html}</root>", parser=parser)
-    except AssertionError:
-        try:
-            fragments = html.document_fromstring(f"<root>{input_html}</root>", parser=parser)
-        except Exception:  # noqa: BLE001
-            # Last resort: return as text in a fake root element
-            fragments = html.Element("root")
-            fragments.text = input_html
+    except Exception:  # noqa: BLE001
+        fragments = html.Element("root")
+        fragments.text = input_html
 
-    if isinstance(fragments, list) and len(fragments) == 1:
-        result = fragments[0]
-    elif isinstance(fragments, list):
-        # Create a container for multiple fragments
-        container = html.Element("root")
-        for fragment in fragments:
-            if isinstance(fragment, str):
-                if len(container) == 0:
-                    container.text = (container.text or "") + fragment
-                else:
-                    container[-1].tail = (container[-1].tail or "") + fragment
-            else:
-                container.append(fragment)
-        result = container
-    else:
-        result = fragments
+    result = fragments[0]
 
     if isinstance(result, etree._Element):  # noqa: SLF001
         html_tags = result.xpath(f".//{HTML_TAG_REPLACEMENT}")
