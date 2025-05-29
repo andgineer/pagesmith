@@ -4,9 +4,10 @@ from lxml import etree, html
 
 FAKE_ROOT = "pagesmith-root"
 HTML_TAG_REPLACEMENT = "pagesmith-html"
-TAGS_TO_REPLACE = {
+SPECIAL_LXML_TAGS = {
     "html": HTML_TAG_REPLACEMENT,
     "head": "pagesmith-head",
+    "body": "pagesmith-body",
 }
 
 
@@ -16,72 +17,41 @@ def parse_partial_html(input_html: str) -> etree._Element | None:  # noqa: C901,
     Handles malformed HTML gracefully and preserves content structure as much as possible.
 
     Note:
-        The returned element tree have a 'root' wrapper element that
-        contains the actual parsed content.
+        The returned element tree have a root wrapper element that simplifies operations with
+        the result as single etree even if this is HTML fragments in some text without
+        a single root.
         Use `etree_to_str()` to get the clean HTML output without the wrapper.
 
     Features:
     - Removes comments and CDATA sections
     - Handles partial/fragment HTML (no need for complete document structure)
     - Recovers from malformed HTML using lxml's error recovery
-    - Suppress lxml special handling for tags `html`, `head` and treat them as normal tags
+    - Suppress lxml special handling for tags `html`, `head`, `body` and treat them as normal tags
 
     Returns:
         lxml Element tree, wrapped in a 'root' container element
         or None if parsing completely fails
     """
 
-    # Clean up comments
-    open_count = input_html.count("<!--")
-    close_count = input_html.count("-->")
-    if open_count != close_count:
-        input_html = input_html.replace("<!--", "&lt;!--")
+    input_html = _normalize(input_html)
 
     # Clean up CDATA
-    input_html = re.sub(r"[\n\r]+", " ", input_html)
     input_html = re.sub(r"(<!\[CDATA\[.*?]]>|<!DOCTYPE[^>]*?>)", "", input_html, flags=re.DOTALL)
 
-    # Temporarily replace HTML tags to avoid special treatment by lxml
-    for tag, replacement in TAGS_TO_REPLACE.items():
-        input_html = re.sub(
-            rf"<{tag}(\s[^>]*)?>",
-            rf"<{replacement}\1>",
-            input_html,
-            flags=re.IGNORECASE,
-        )
-        input_html = re.sub(rf"</{tag}>", rf"</{replacement}>", input_html, flags=re.IGNORECASE)
+    input_html = _rename_special_tags(input_html)
 
     parser = etree.HTMLParser(recover=True, remove_comments=True, remove_pis=True)
     try:
-        fragments = html.fragments_fromstring(
-            f"<{FAKE_ROOT}>{input_html}</{FAKE_ROOT}>",
+        result = html.fragment_fromstring(
+            input_html,
             parser=parser,
+            create_parent=FAKE_ROOT,
         )
     except Exception:  # noqa: BLE001
-        fragments = html.Element(FAKE_ROOT)
-        fragments.text = input_html
+        result = html.Element(FAKE_ROOT)
+        result.text = input_html
 
-    result = fragments[0]
-
-    if isinstance(result, etree._Element):  # noqa: SLF001
-        html_tags = result.xpath(f".//{HTML_TAG_REPLACEMENT}")
-
-        # Root element has the target tag - rename it
-        if result.tag == HTML_TAG_REPLACEMENT:
-            result.tag = "html"
-        # Only one element in the entire tree has the target tag - rename it
-        elif len(html_tags) == 1:
-            html_tags[0].tag = "html"
-        # Multiple elements have the target tag - unwrap them all
-        else:
-            for element in html_tags:
-                unwrap_element(element)
-
-        for tag, replacement in TAGS_TO_REPLACE.items():
-            for elem in result.xpath(f".//{replacement}"):
-                elem.tag = tag
-
-    return result
+    return _restore_special_tags(result)
 
 
 def etree_to_str(root: etree._Element | None) -> str:
@@ -153,3 +123,51 @@ def unwrap_element(element: etree.Element) -> None:  # noqa: PLR0912,C901
             parent.text = element.tail
 
     parent.remove(element)
+
+
+def _rename_special_tags(input_html: str) -> str:
+    """Replace HTML tags to avoid special treatment by lxml"""
+    tags_pattern = "|".join(re.escape(tag) for tag in SPECIAL_LXML_TAGS)
+
+    def replace_tag(match: re.Match[str]) -> str:
+        slash, tag, attrs = match.groups()
+        replacement = SPECIAL_LXML_TAGS[tag.lower()]
+        return f"<{slash}{replacement}{attrs or ''}>"
+
+    return re.sub(
+        rf"<(/??)({tags_pattern})(\s[^>]*)?>",
+        replace_tag,
+        input_html,
+        flags=re.IGNORECASE,
+    )
+
+
+def _restore_special_tags(result: etree._Element | None) -> etree._Element | None:
+    """Rename special tags back to their original names in the parsed tree.
+
+    If special tag duplicates are found, unwrap them instead to fix malformed HTML.
+    """
+    if isinstance(result, etree._Element):  # noqa: SLF001
+        for tag, replacement in SPECIAL_LXML_TAGS.items():
+            renamed_tags = result.xpath(f".//{replacement}")
+            if len(renamed_tags) == 1:
+                renamed_tags[0].tag = tag
+            else:
+                for element in renamed_tags:
+                    unwrap_element(element)
+    return result
+
+
+def _normalize(input_html: str) -> str:
+    """Normalize whitespaces and prevents information lost
+    in lxml `remove_comments` functionality.
+    """
+    # Normalize whitespaces
+    result = re.sub(r"[\n\r]+", " ", input_html)
+
+    # Convert to text malformed HTML comments
+    open_count = result.count("<!--")
+    close_count = result.count("-->")
+    if open_count != close_count:
+        result = result.replace("<!--", "&lt;!--")
+    return result.strip()
