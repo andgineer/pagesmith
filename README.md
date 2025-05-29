@@ -8,9 +8,9 @@
 | src/pagesmith/chapter\_detector.py    |       52 |        0 |    100% |           |
 | src/pagesmith/html\_page\_splitter.py |      145 |       22 |     85% |39, 76-78, 86-88, 106-107, 124, 129, 138, 150, 163, 168-172, 175, 189-190, 226 |
 | src/pagesmith/page\_splitter.py       |       51 |        2 |     96% |   127-128 |
-| src/pagesmith/parser.py               |       75 |       10 |     87% |56-58, 67, 86, 89, 99, 106, 144, 149 |
+| src/pagesmith/parser.py               |       76 |       10 |     87% |60-62, 71, 90, 93, 103, 110, 148, 153 |
 | src/pagesmith/refine\_html.py         |      158 |       21 |     87% |94-96, 175, 253, 264-273, 354-363 |
-|                             **TOTAL** |  **482** |   **55** | **89%** |           |
+|                             **TOTAL** |  **483** |   **55** | **89%** |           |
 
 
 ## Setup coverage badge
