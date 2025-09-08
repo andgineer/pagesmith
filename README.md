@@ -2,10 +2,10 @@
 [![Coverage](https://raw.githubusercontent.com/andgineer/pagesmith/python-coverage-comment-action-data/badge.svg)](https://htmlpreview.github.io/?https://github.com/andgineer/pagesmith/blob/python-coverage-comment-action-data/htmlcov/index.html)
 # pagesmith
 
-Splitting HTML into pages, preserving HTML tags while respecting the original document structure.
-Utilize blazingly fast lxml parser.
+Split HTML into pages while preserving HTML tags and respecting the original document structure.
+Utilizes the blazingly fast lxml parser.
 
-Splitting pure text into pages at natural break points such as paragraphs or sentences.
+Split pure text into pages at natural break points such as paragraphs or sentences.
 
 Detect chapters in pure text to create a Table of Contents.
 
@@ -18,7 +18,7 @@ Detect chapters in pure text to create a Table of Contents.
 
 Do not forget to run `. ./activate.sh`.
 
-For work it need [uv](https://github.com/astral-sh/uv) installed.
+For development, you need [uv](https://github.com/astral-sh/uv) installed.
 
 Use [pre-commit](https://pre-commit.com/#install) hooks for code quality:
 
