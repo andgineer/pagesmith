@@ -843,3 +843,21 @@ class TestPreservationBehavior:
         e = parse_partial_html(html)
         result = etree_to_str(e)
         assert "<head>" in result
+
+    def test_body_tag(self):
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test Page</title>
+        </head>
+        <body>
+            <h1>Original Heading</h1>
+            <p>Original paragraph.</p>
+        </body>
+        </html>
+        """
+        e = parse_partial_html(html)
+        result = etree_to_str(e)
+        print(result)
+        assert "<body>" in result
