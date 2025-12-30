@@ -5,12 +5,12 @@
 | Name                                  |    Stmts |     Miss |   Cover |   Missing |
 |-------------------------------------- | -------: | -------: | ------: | --------: |
 | src/pagesmith/\_\_about\_\_.py        |        1 |        0 |    100% |           |
-| src/pagesmith/chapter\_detector.py    |       52 |        0 |    100% |           |
-| src/pagesmith/html\_page\_splitter.py |      145 |       22 |     85% |39, 76-78, 86-88, 106-107, 124, 129, 138, 150, 163, 168-172, 175, 189-190, 226 |
+| src/pagesmith/chapter\_detector.py    |       50 |        0 |    100% |           |
+| src/pagesmith/html\_page\_splitter.py |      146 |       22 |     85% |39, 76-78, 86-88, 106-107, 124, 129, 139, 151, 164, 169-173, 176, 190-191, 227 |
 | src/pagesmith/page\_splitter.py       |       51 |        2 |     96% |   127-128 |
 | src/pagesmith/parser.py               |       81 |        9 |     89% |50-52, 60, 63, 73, 80, 118, 123 |
 | src/pagesmith/refine\_html.py         |      158 |       21 |     87% |94-96, 175, 253, 264-273, 354-363 |
-|                             **TOTAL** |  **488** |   **54** | **89%** |           |
+| **TOTAL**                             |  **487** |   **54** | **89%** |           |
 
 
 ## Setup coverage badge
