@@ -130,6 +130,7 @@ class HtmlPageSplitter:
         current_size = 0
 
         for item_type, item_content in content_items:
+            item_size = 0  # initialized here only to satisfy type checker
             if item_type == "text":
                 # This is text that goes at the beginning of the element
                 if not current_shell.text:

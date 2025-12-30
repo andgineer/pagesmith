@@ -26,22 +26,24 @@ The project uses:
 
 ### Environment Setup
 ```bash
-. ./activate.sh  # Sets up or activates virtual environment using uv
+source ./activate.sh  # Sets up or activates virtual environment using uv
 ```
+
+**IMPORTANT**: Always activate the virtual environment before running any commands. Use `source ./activate.sh` before each command.
 
 ### Testing
 ```bash
-python -m pytest                    # Run all tests
-python -m pytest tests/test_*.py    # Run specific test files
-python -m pytest --doctest-modules  # Run doctests (configured in pytest.ini)
+source ./activate.sh && python -m pytest                    # Run all tests
+source ./activate.sh && python -m pytest tests/test_*.py    # Run specific test files
+source ./activate.sh && python -m pytest --doctest-modules  # Run doctests (configured in pytest.ini)
 ```
 
 ### Code Quality
 ```bash
-invoke pre           # Run pre-commit checks on all files
-uv run ruff check    # Run linting
-uv run mypy src      # Run type checking
+source ./activate.sh && invoke pre           # Run pre-commit checks on all files
 ```
+
+**IMPORTANT**: Always use `invoke pre` or `pre-commit run --all-files` for code quality checks. Never run ruff or mypy directly.
 
 ### Documentation
 ```bash

@@ -8,11 +8,11 @@ from pagesmith.html_page_splitter import HtmlPageSplitter, PAGE_LENGTH_TARGET
 
 
 def html_to_normalized_text(html: str):
-    html_text = etree.tostring(
-        etree.fromstring(html.encode("utf-8"), parser=etree.HTMLParser()),
-        method="text",
-        encoding="unicode",
-    )
+    from lxml import html as lxml_html
+
+    # Use html.fromstring which handles Unicode strings properly in lxml 6.0+
+    tree = lxml_html.fromstring(html)
+    html_text = etree.tostring(tree, method="text", encoding="unicode")
     text_normalized = " ".join(html_text.split())
     print(f"Input normalized text:\n{text_normalized}")
     return text_normalized
@@ -20,10 +20,12 @@ def html_to_normalized_text(html: str):
 
 def pages_to_normalized_text(pages):
     """Extract text from all pages and combine"""
-    parser = etree.HTMLParser(recover=True)
+    from lxml import html as lxml_html
+
     all_page_texts = []
     for page in pages:
-        page_tree = etree.fromstring(page.encode("utf-8"), parser)
+        # Use html.fromstring which handles Unicode strings properly in lxml 6.0+
+        page_tree = lxml_html.fromstring(page)
         page_text = etree.tostring(page_tree, method="text", encoding="unicode")
         all_page_texts.append(page_text)
     pages_text = " ".join(all_page_texts)

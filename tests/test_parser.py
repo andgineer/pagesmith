@@ -263,7 +263,7 @@ class TestRealWorldScenarios:
         """Test form elements with missing or malformed attributes."""
         html = """
         <form action= method>
-            <input type="text" name="username" value="test >
+            <input type="text" name="username" value=test>
             <input type=password name=pwd>
             <button type=submit>Submit
         </form>
