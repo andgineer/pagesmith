@@ -21,8 +21,7 @@ class ChapterDetector:
     """Detect chapters in pure text to create a Table of Contents."""
 
     def __init__(self, min_chapter_distance: int = MIN_CHAPTER_DISTANCE) -> None:
-        """Initialize the chapter detector.
-
+        """
         min_chapter_distance: Minimum character distance required between chapters.
             Chapter signatures detected within this threshold from previously detected chapters
             will be ignored. Default is 20 characters.
