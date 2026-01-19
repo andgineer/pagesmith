@@ -1,0 +1,9 @@
+
+Unicode HTML size: 464 chars
+Target page size: 200 chars
+Page 1 size: 201 chars
+Page 2 size: 243 chars
+Input normalized text:
+English text with regular ASCII characters. Chinese text: 这是一些中文文本，应该正确处理。 Arabic text: هذا نص باللغة العربية يجب معالجته بشكل صحيح. Russian text: Это текст на русском языке, который должен обрабатываться правильно. Emojis: 🌍 🌎 🌏 👨‍👩‍👧‍👦 should be handled correctly. Math symbols: ∑ ∫ ∞ √ ∆ should be preserved.
+Pages normalized text:
+English text with regular ASCII characters. Chinese text: 这是一些中文文本，应该正确处理。 Arabic text: هذا نص باللغة العربية يجب معالجته بشكل صحيح. Russian text: Это текст на русском языке, который должен обрабатываться правильно. Emojis: 🌍 🌎 🌏 👨‍👩‍👧‍👦 should be handled correctly. Math symbols: ∑ ∫ ∞ √ ∆ should be preserved.
