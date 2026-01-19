@@ -10,6 +10,38 @@ PAGE_LENGTH_TARGET = 3000  # Target page length in characters
 PAGE_LENGTH_ERROR_TOLERANCE = 0.25  # Tolerance for page length error
 
 
+def _get_nsmap(attrib: dict[str, str]) -> dict[str, str] | None:
+    """Extract namespace map from attributes to keep parser happy."""
+    nsmap = {}
+    for attr_name in attrib:
+        if ":" in attr_name:
+            prefix = attr_name.split(":", 1)[0]
+            if prefix not in nsmap:
+                nsmap[prefix] = {"epub": "http://www.idpf.org/2007/ops"}.get(
+                    prefix,
+                    f"http://example.com/ns/{prefix}",
+                )
+    return nsmap if nsmap else None
+
+
+def _set_attributes(
+    element: etree._Element,
+    attrib: dict[str, str],
+    nsmap: dict[str, str] | None,
+) -> None:
+    """Set attributes on element, handling namespaced attributes with QName."""
+    for attr_name, attr_value in attrib.items():
+        if ":" in attr_name and nsmap:
+            prefix = attr_name.split(":", 1)[0]
+            if prefix in nsmap:
+                qname = etree.QName(nsmap[prefix], attr_name.split(":", 1)[1])
+                element.set(qname, attr_value)
+            else:
+                element.set(attr_name, attr_value)
+        else:
+            element.set(attr_name, attr_value)
+
+
 class HtmlPageSplitter:
     """Split HTML into pages,
     preserving HTML tags while respecting the original document structure.
@@ -124,9 +156,9 @@ class HtmlPageSplitter:
                     content_items.append(("tail", child.tail))
 
         # Now group content items into pages
-        current_shell = etree.Element(element.tag)
-        if element.attrib:
-            current_shell.attrib.update(element.attrib)
+        nsmap = _get_nsmap(element.attrib)
+        current_shell = etree.Element(element.tag, nsmap=nsmap)
+        _set_attributes(current_shell, element.attrib, nsmap)
         current_size = 0
 
         for item_type, item_content in content_items:
@@ -146,9 +178,8 @@ class HtmlPageSplitter:
                 ):
                     # Yield current shell and start a new one
                     yield current_shell
-                    current_shell = etree.Element(element.tag)
-                    if element.attrib:
-                        current_shell.attrib.update(element.attrib)
+                    current_shell = etree.Element(element.tag, nsmap=nsmap)
+                    _set_attributes(current_shell, element.attrib, nsmap)
                     current_size = 0
                 current_shell.append(item_content)
             elif item_type == "tail":
@@ -159,9 +190,8 @@ class HtmlPageSplitter:
                 ):
                     # Yield current shell and start a new one
                     yield current_shell
-                    current_shell = etree.Element(element.tag)
-                    if element.attrib:
-                        current_shell.attrib.update(element.attrib)
+                    current_shell = etree.Element(element.tag, nsmap=nsmap)
+                    _set_attributes(current_shell, element.attrib, nsmap)
                     current_size = 0
 
                 if len(current_shell) > 0:
@@ -191,10 +221,10 @@ class HtmlPageSplitter:
             return
 
         chunks = self._split_text(text)
+        nsmap = _get_nsmap(element.attrib)
         for chunk in chunks:
-            new_elem = etree.Element(element.tag)
-            if element.attrib:
-                new_elem.attrib.update(element.attrib)
+            new_elem = etree.Element(element.tag, nsmap=nsmap)
+            _set_attributes(new_elem, element.attrib, nsmap)
             new_elem.text = chunk
             yield new_elem
 

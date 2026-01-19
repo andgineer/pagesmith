@@ -772,3 +772,140 @@ def test_empty_tags_edge_cases():
     )
 
     assert_text(multiple_empty_html, pages2)
+
+
+@allure.epic("HTML page splitter")
+class TestNamespacedAttributes:
+    """Test handling of namespaced attributes (e.g., epub:type)."""
+
+    def test_epub_type_attribute(self):
+        """Test that elements with epub:type attribute can be split without errors."""
+        html_with_epub_type = """
+        <div epub:type="chapter">
+            <p>This is a chapter with epub:type attribute. It should be split into pages without errors.</p>
+            <p>More content here that will be split across multiple pages when the target size is small enough.</p>
+        </div>
+        """
+        target_size = 100
+
+        splitter = HtmlPageSplitter(html_with_epub_type, target_length=target_size)
+        pages = list(splitter.pages())
+
+        assert len(pages) > 0, "Should produce at least one page"
+        # Should not raise ValueError about invalid attribute name
+        for page in pages:
+            # Verify page can be parsed
+            etree.fromstring(f"<root>{page}</root>", parser=etree.HTMLParser(recover=True))
+
+        assert_text(html_with_epub_type, pages)
+
+    def test_epub_type_preserved(self):
+        """Test that epub:type attribute is preserved in split pages."""
+        html_with_epub_type = '<section epub:type="chapter"><p>Content here.</p></section>'
+        target_size = 50
+
+        splitter = HtmlPageSplitter(html_with_epub_type, target_length=target_size)
+        pages = list(splitter.pages())
+
+        # Check that epub:type appears in at least one page
+        combined = "".join(pages)
+        assert 'epub:type="chapter"' in combined, "epub:type attribute should be preserved"
+
+    def test_multiple_namespaced_attributes(self):
+        """Test elements with multiple namespaced attributes."""
+        html_with_multiple_ns = """
+        <div epub:type="chapter" epub:class="fiction" custom:attr="value">
+            <p>Content with multiple namespaced attributes.</p>
+        </div>
+        """
+        target_size = 100
+
+        splitter = HtmlPageSplitter(html_with_multiple_ns, target_length=target_size)
+        pages = list(splitter.pages())
+
+        assert len(pages) > 0, "Should produce pages"
+        # Should not raise errors
+        for page in pages:
+            etree.fromstring(f"<root>{page}</root>", parser=etree.HTMLParser(recover=True))
+
+        # Check that namespaced attributes are preserved
+        combined = "".join(pages)
+        assert 'epub:type="chapter"' in combined
+        assert 'epub:class="fiction"' in combined
+        assert 'custom:attr="value"' in combined
+
+    def test_mixed_regular_and_namespaced_attributes(self):
+        """Test elements with both regular and namespaced attributes."""
+        html_mixed = """
+        <div class="my-class" id="my-id" epub:type="section" style="color: red;">
+            <p>Content with mixed attributes.</p>
+        </div>
+        """
+        target_size = 100
+
+        splitter = HtmlPageSplitter(html_mixed, target_length=target_size)
+        pages = list(splitter.pages())
+
+        assert len(pages) > 0, "Should produce pages"
+        combined = "".join(pages)
+
+        # Regular attributes should be preserved
+        assert 'class="my-class"' in combined
+        assert 'id="my-id"' in combined
+        assert 'style="color: red;"' in combined
+        # Namespaced attribute should also be preserved
+        assert 'epub:type="section"' in combined
+
+    def test_large_content_with_namespaced_attributes(self):
+        """Test splitting large content with namespaced attributes."""
+        large_html = '<div epub:type="chapter"><p>' + "Content " * 500 + "</p></div>"
+        target_size = 200
+
+        splitter = HtmlPageSplitter(large_html, target_length=target_size)
+        pages = list(splitter.pages())
+
+        assert len(pages) > 1, "Large content should be split into multiple pages"
+
+        # All pages should be parseable
+        for page in pages:
+            etree.fromstring(f"<root>{page}</root>", parser=etree.HTMLParser(recover=True))
+
+        # epub:type should appear in the output
+        combined = "".join(pages)
+        assert 'epub:type="chapter"' in combined
+
+        assert_text(large_html, pages)
+
+    def test_nested_elements_with_namespaced_attributes(self):
+        """Test nested elements where both have namespaced attributes."""
+        nested_html = """
+        <div epub:type="book">
+            <section epub:type="chapter">
+                <p epub:type="paragraph">Nested content with namespaced attributes at multiple levels.</p>
+            </section>
+        </div>
+        """
+        target_size = 100
+
+        splitter = HtmlPageSplitter(nested_html, target_length=target_size)
+        pages = list(splitter.pages())
+
+        assert len(pages) > 0, "Should produce pages"
+        combined = "".join(pages)
+
+        # All namespaced attributes should be preserved
+        assert 'epub:type="book"' in combined
+        assert 'epub:type="chapter"' in combined
+        assert 'epub:type="paragraph"' in combined
+
+    def test_no_namespaced_attributes_still_works(self):
+        """Test that elements without namespaced attributes still work normally."""
+        regular_html = '<div class="test"><p>Regular content without namespaces.</p></div>'
+        target_size = 100
+
+        splitter = HtmlPageSplitter(regular_html, target_length=target_size)
+        pages = list(splitter.pages())
+
+        assert len(pages) > 0, "Should produce pages"
+        combined = "".join(pages)
+        assert 'class="test"' in combined, "Regular attributes should still work"
