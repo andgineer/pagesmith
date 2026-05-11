@@ -66,7 +66,7 @@ def docs_task_factory(language: str):
             c.run(f"open -a 'Google Chrome' http://127.0.0.1:{port}")
             c.run(f"zensical serve --config-file {zensical_config_copy_path} --dev-addr localhost:{port}")
         finally:
-            zensical_config_copy_path.unlink()
+            zensical_config_copy_path.unlink(missing_ok=True)
 
     return docs
 

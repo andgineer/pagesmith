@@ -14,5 +14,4 @@ for lang in en ru; do  # en should be the first language as it clears the root o
     sed -i'' -e "s@OUTPUT@$output@g" docs/_zensical.yaml
 
     zensical build --config-file docs/_zensical.yaml
-    rm docs/_zensical.yaml docs/_zensical.yaml-e
 done
