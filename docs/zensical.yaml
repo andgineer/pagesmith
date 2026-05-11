@@ -1,0 +1,42 @@
+site_name: pagesmith
+site_url: https://andgineer.github.io/pagesmith
+author: Andrey Sorokin
+
+docs_dir: src/LANGUAGE
+site_dir: OUTPUT
+
+repository:
+  url: https://github.com/andgineer/pagesmith
+  branch: master
+  edit_uri: edit/master/docs/src
+
+extra:
+  alternate:
+    - name: English
+      link: /pagesmith/
+      lang: en
+    - name: Русский
+      link: /pagesmith/ru/
+      lang: ru
+
+plugins:
+  - search: {}
+  - mkdocstrings:
+        handlers:
+          python:
+            options:
+              show_root_heading: true
+
+markdown_extensions:
+  - abbr
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - index.md
+  - html_splitter.md
+  - text_splitter.md

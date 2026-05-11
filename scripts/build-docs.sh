@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-#
-# Create docs in docs/
-#
-
-./scripts/docstrings.sh
+# Build docs in site/
 
 for lang in en ru; do  # en should be the first language as it clears the root of the site
-    scripts/docs-render-config.sh $lang
-    if [ $lang != "en" ]; then
-      cp -r ./docs/src/en/images/ ./docs/src/$lang/images/
-      cp ./docs/src/en/reference.md ./docs/src/ru/reference.md
+    if [ $lang == "en" ]; then
+      output=site
+      rm -rf $output
+    else
+      output=site/$lang
     fi
-    mkdocs build --dirty --config-file docs/_mkdocs.yml
-    rm docs/_mkdocs.yml
+
+    echo $output, $lang
+    sed "s/LANGUAGE/$lang/g" docs/zensical.yaml > docs/_zensical.yaml
+    sed -i'' -e "s@OUTPUT@$output@g" docs/_zensical.yaml
+
+    zensical build --config-file docs/_zensical.yaml
+    rm docs/_zensical.yaml docs/_zensical.yaml-e
 done

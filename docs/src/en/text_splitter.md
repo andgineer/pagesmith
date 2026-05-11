@@ -2,7 +2,7 @@
 
 ## Split Text to Pages
 
-Use class [PageSplitter][pagesmith.PageSplitter]
+Use class [PageSplitter](reference.md#pagesmith.PageSplitter)
 
 ```python
 from pagesmith import PageSplitter
@@ -16,7 +16,7 @@ for page in PageSplitter(text, target_page_size=50).pages():
 
 ## Detect Chapters in Text
 
-Use class [ChapterDetector][pagesmith.ChapterDetector] to find chapter headings in plain text.
+Use class [ChapterDetector](reference.md#pagesmith.ChapterDetector) to find chapter headings in plain text.
 
 ```python
 from pagesmith import ChapterDetector

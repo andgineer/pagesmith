@@ -2,7 +2,7 @@
 
 ## Разбиение текста на страницы
 
-С помощью класса [PageSplitter][pagesmith.PageSplitter]
+С помощью класса [PageSplitter](reference.md#pagesmith.PageSplitter)
 
 ```python
 from pagesmith import PageSplitter
@@ -16,7 +16,7 @@ for page in PageSplitter(text, target_page_size=50).pages():
 
 ## Обнаружение глав в тексте
 
-Используйте класс [ChapterDetector][pagesmith.ChapterDetector] для поиска заголовков глав в обычном тексте.
+Используйте класс [ChapterDetector](reference.md#pagesmith.ChapterDetector) для поиска заголовков глав в обычном тексте.
 
 ```python
 from pagesmith import ChapterDetector

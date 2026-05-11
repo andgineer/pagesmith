@@ -1,5 +1,6 @@
 import shutil
 import sys
+from pathlib import Path
 
 from invoke import Collection, Context, task
 
@@ -50,13 +51,22 @@ def docs_task_factory(language: str):
     @task
     def docs(c: Context):
         """Docs preview for the language specified."""
-        c.run("open -a 'Google Chrome' http://127.0.0.1:8000/pagesmith/")
-        c.run(f"scripts/docs-render-config.sh {language}")
-        if language != "en":
-            shutil.rmtree(f"./docs/src/{language}/images", ignore_errors=True)
-            shutil.copytree("./docs/src/en/images", f"./docs/src/{language}/images")
-            shutil.copy("./docs/src/en/reference.md", f"./docs/src/{language}/reference.md")
-        c.run("mkdocs serve -f docs/_mkdocs.yml")
+        zensical_config_path = Path("docs/zensical.yaml")
+        zensical_config_copy_path = Path("docs/_zensical.yaml")
+
+        output_dir = "site" if language == "en" else f"site/{language}"
+
+        zensical_config = zensical_config_path.read_text()
+        zensical_config = zensical_config.replace("LANGUAGE", language)
+        zensical_config = zensical_config.replace("OUTPUT", output_dir)
+
+        try:
+            zensical_config_copy_path.write_text(zensical_config)
+            port = 8001
+            c.run(f"open -a 'Google Chrome' http://127.0.0.1:{port}")
+            c.run(f"zensical serve --config-file {zensical_config_copy_path} --dev-addr localhost:{port}")
+        finally:
+            zensical_config_copy_path.unlink()
 
     return docs
 

@@ -2,7 +2,7 @@
 
 ## Split HTML to Pages
 
-Use class [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
+Use class [HtmlPageSplitter](reference.md#pagesmith.HtmlPageSplitter)
 
 ```python
 from pagesmith import HtmlPageSplitter
@@ -56,6 +56,6 @@ for page in HtmlPageSplitter(html, target_length=50).pages():
 
 ## Refine HTML
 
-[refine_html][pagesmith.refine_html.refine_html] is a utility for cleaning up HTML content.
+[refine_html](reference.md#pagesmith.refine_html.refine_html) is a utility for cleaning up HTML content.
 
 It removes unnecessary for reading tags and vertical gaps.

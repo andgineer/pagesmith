@@ -2,7 +2,7 @@
 
 ## Разбиение HTML на страницы
 
-С помощью класса [HtmlPageSplitter][pagesmith.HtmlPageSplitter]
+С помощью класса [HtmlPageSplitter](reference.md#pagesmith.HtmlPageSplitter)
 
 ```python
 from pagesmith import HtmlPageSplitter
@@ -56,4 +56,4 @@ for page in HtmlPageSplitter(html, target_length=50).pages():
 
 ## Очистка HTML
 
-[refine_html][pagesmith.refine_html.refine_html] очищает HTML от не нужных для чтения тэгов и убирает излишние вертикальные промежутки.
+[refine_html](reference.md#pagesmith.refine_html.refine_html) очищает HTML от не нужных для чтения тэгов и убирает излишние вертикальные промежутки.
