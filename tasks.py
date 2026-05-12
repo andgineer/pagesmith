@@ -1,21 +1,19 @@
 import shutil
 import sys
+from contextlib import contextmanager
 from pathlib import Path
-
 from invoke import Collection, Context, task
 
 
+DOCS_SRC = Path('docs/src/')
+
+
 def get_allowed_doc_languages():
-    build_docs_file_name = "scripts/build-docs.sh"
-    try:
-        with open(build_docs_file_name) as f:
-            for line in f:
-                if "for lang in" in line:
-                    langs = line.split("in")[1].strip().split(";")[0].split()
-                    return [lang.strip() for lang in langs]
-    except FileNotFoundError:
-        print(f"No {build_docs_file_name} file found")
-    return ["en", "bg", "de", "es", "fr", "ru"]  # default
+    """Detect languages as subfolders in docs/src/
+
+    Ensure `en` is always first.
+    """
+    return ['en'] + [f.name for f in DOCS_SRC.iterdir() if f.is_dir() and f.name != "en"]
 
 
 ALLOWED_DOC_LANGUAGES = get_allowed_doc_languages()
@@ -47,28 +45,53 @@ def reqs(c: Context):
     c.run("uv lock --upgrade")
 
 
+@contextmanager
+def docs_rendered(language: str):
+    """Render docs sources for language specified.
+
+    Copy language agnostic assets from en to non-en folders.
+    Substitute language and site dir in config copy.
+
+    Returns config copy path.
+    """
+    config_template_path = Path("docs/mkdocs.yml")
+    config_copy_path = Path("docs/_mkdocs.yml")
+    reference_master_path = DOCS_SRC / "en" / "reference.md"
+    reference_copy_path = DOCS_SRC / language / "reference.md"
+
+    site_dir = "site" if language == "en" else f"site/{language}"
+
+    config = config_template_path.read_text()
+    config = config.replace("LANGUAGE", language)
+    config = config.replace("SITE_DIR", site_dir)
+    try:
+        config_copy_path.write_text(config)
+        if language != "en":
+            shutil.copy2(reference_master_path, reference_copy_path)
+        yield config_copy_path
+    finally:
+        config_copy_path.unlink(missing_ok=True)
+        if language != "en":
+            reference_copy_path.unlink(missing_ok=True)
+
+
 def docs_task_factory(language: str):
     @task
     def docs(c: Context):
         """Docs preview for the language specified."""
-        zensical_config_path = Path("docs/zensical.yaml")
-        zensical_config_copy_path = Path("docs/_zensical.yaml")
-
-        output_dir = "site" if language == "en" else f"site/{language}"
-
-        zensical_config = zensical_config_path.read_text()
-        zensical_config = zensical_config.replace("LANGUAGE", language)
-        zensical_config = zensical_config.replace("OUTPUT", output_dir)
-
-        try:
-            zensical_config_copy_path.write_text(zensical_config)
+        with docs_rendered(language) as config_copy_path:
             port = 8001
             c.run(f"open -a 'Google Chrome' http://127.0.0.1:{port}")
-            c.run(f"zensical serve --config-file {zensical_config_copy_path} --dev-addr localhost:{port}")
-        finally:
-            zensical_config_copy_path.unlink(missing_ok=True)
-
+            c.run(f"zensical serve --config-file {config_copy_path} --dev-addr localhost:{port}")
     return docs
+
+
+@task
+def build_docs(c: Context):
+    """Build docs in docs/site/."""
+    for language in ALLOWED_DOC_LANGUAGES:
+        with docs_rendered(language) as config_copy_path:
+            c.run(f"zensical build --config-file {config_copy_path}")
 
 
 @task
