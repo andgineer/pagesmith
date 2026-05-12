@@ -1,3 +1,4 @@
+import os
 import shutil
 import sys
 from contextlib import contextmanager
@@ -5,7 +6,8 @@ from pathlib import Path
 from invoke import Collection, Context, task
 
 
-DOCS_SRC = Path('docs/src/')
+DOCS_PATH = Path("docs")
+DOCS_SRC_PATH = DOCS_PATH / 'src'
 
 
 def get_allowed_doc_languages():
@@ -13,7 +15,7 @@ def get_allowed_doc_languages():
 
     Ensure `en` is always first.
     """
-    return ['en'] + [f.name for f in DOCS_SRC.iterdir() if f.is_dir() and f.name != "en"]
+    return ['en'] + [f.name for f in DOCS_SRC_PATH.iterdir() if f.is_dir() and f.name != "en"]
 
 
 ALLOWED_DOC_LANGUAGES = get_allowed_doc_languages()
@@ -54,25 +56,25 @@ def docs_rendered(language: str):
 
     Returns config copy path.
     """
-    config_template_path = Path("docs/mkdocs.yml")
-    config_copy_path = Path("docs/_mkdocs.yml")
-    reference_master_path = DOCS_SRC / "en" / "reference.md"
-    reference_copy_path = DOCS_SRC / language / "reference.md"
+    config_template_path = DOCS_PATH / "mkdocs.yml"
+    common_path = DOCS_PATH / "common"
+    src_path = DOCS_SRC_PATH / language
 
-    site_dir = "site" if language == "en" else f"site/{language}"
+    build_docs_path = Path('build') / "docs"
+    build_config_path = build_docs_path / "mkdocs.yml"
+    build_src_path = build_docs_path / "src" / language
+    site_dir = Path("site") if language == "en" else Path("site") / language
 
     config = config_template_path.read_text()
     config = config.replace("LANGUAGE", language)
-    config = config.replace("SITE_DIR", site_dir)
-    try:
-        config_copy_path.write_text(config)
-        if language != "en":
-            shutil.copy2(reference_master_path, reference_copy_path)
-        yield config_copy_path
-    finally:
-        config_copy_path.unlink(missing_ok=True)
-        if language != "en":
-            reference_copy_path.unlink(missing_ok=True)
+    config = config.replace("SITE_DIR", str(site_dir))
+
+    build_docs_path.mkdir(parents=True, exist_ok=True)
+    build_config_path.write_text(config)
+    shutil.rmtree(build_src_path, ignore_errors=True)
+    shutil.copytree(src_path, build_src_path)
+    shutil.copytree(common_path, build_src_path, dirs_exist_ok=True)
+    yield build_config_path
 
 
 def docs_task_factory(language: str):
