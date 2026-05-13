@@ -39,7 +39,6 @@ jobs:
         with:
           python-version: ${{ env.PRIMARY_PYTHON_VERSION  }}
 
-
       - name: Install uv environment
         uses: andgineer/uv-venv@v3
 
