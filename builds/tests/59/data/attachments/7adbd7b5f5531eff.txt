@@ -1,0 +1,4 @@
+Input normalized text:
+This is a chapter with epub:type attribute. It should be split into pages without errors. More content here that will be split across multiple pages when the target size is small enough.
+Pages normalized text:
+This is a chapter with epub:type attribute. It should be split into pages without errors. More content here that will be split across multiple pages when the target size is small enough.
